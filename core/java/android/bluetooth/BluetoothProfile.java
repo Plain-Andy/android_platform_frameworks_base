@@ -128,17 +128,16 @@ public interface BluetoothProfile {
     static public final int HID_DEVICE = 17;
 
     /**
-     * SAP
-     * @hide
-     */
-    public static final int SAP = 20;
-
-    /**
      * DUN
      * @hide
      */
 
     public static final int DUN = 21;
+    /**
+     * SAP
+     * @hide
+     */
+    public static final int SAP = 20;
 
     /**
      * Default priority for devices that we try to auto-connect to and
