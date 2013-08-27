@@ -409,16 +409,8 @@ class QuickSettings {
 
     private void addSystemTiles(ViewGroup parent, LayoutInflater inflater) {
         // Wi-fi
-        final QuickSettingsBasicTile wifiTileFront
+        final QuickSettingsBasicTile wifiTile
                 = new QuickSettingsBasicTile(mContext);
-
-        final QuickSettingsBasicBackTile wifiTileBack
-                = new QuickSettingsBasicBackTile(mContext);
-
-        final QuickSettingsFlipTile wifiTile
-                = new QuickSettingsFlipTile(mContext, wifiTileFront, wifiTileBack);
-
-
         if (LONG_PRESS_TOGGLES) {
             wifiTileFront.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
@@ -429,7 +421,7 @@ class QuickSettings {
             });
         }
 
-        wifiTileFront.setOnClickListener(new View.OnClickListener() {
+        wifiTile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final boolean enable =
@@ -448,10 +440,8 @@ class QuickSettings {
                         return null;
                     }
                 }.execute();
-                wifiTileFront.setLoading(true);
-                wifiTileFront.setPressed(false);
+                wifiTile.setPressed(false);
             }} );
-
         mModel.addWifiTile(wifiTile, new NetworkActivityCallback() {
             private String mPreviousLabel = "";
 
@@ -629,13 +619,6 @@ class QuickSettings {
                 || DEBUG_GONE_TILES) {
             final QuickSettingsBasicTile bluetoothTileFront
                     = new QuickSettingsBasicTile(mContext);
-
-            final QuickSettingsBasicBackTile bluetoothTileBack
-                    = new QuickSettingsBasicBackTile(mContext);
-
-            final QuickSettingsFlipTile bluetoothTile
-                    = new QuickSettingsFlipTile(mContext, bluetoothTileFront, bluetoothTileBack);
-
             if (LONG_PRESS_TOGGLES) {
                 bluetoothTileFront.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
@@ -645,7 +628,7 @@ class QuickSettings {
                     }
                 });
             }
-            bluetoothTileFront.setOnClickListener(new View.OnClickListener() {
+            bluetoothTile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mBluetoothAdapter.isEnabled()) {
@@ -653,33 +636,9 @@ class QuickSettings {
                     } else {
                         mBluetoothAdapter.enable();
                     }
-                    bluetoothTileFront.setPressed(false);
-                    bluetoothTileFront.setLoading(true);
+                    bluetoothTile.setPressed(false);
                 }});
-            bluetoothTileBack.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!mBluetoothAdapter.isEnabled()) {
-                        return;
-                    }
-
-                    if (mBluetoothAdapter.getScanMode() 
-                        != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-                        mBluetoothAdapter.setScanMode(
-                            BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 300);
-                        bluetoothTileBack.setFunction(
-                                mContext.getString(R.string.quick_settings_bluetooth_discoverable_label));
-                    } else {
-                        mBluetoothAdapter.setScanMode(
-                            BluetoothAdapter.SCAN_MODE_CONNECTABLE, 300);
-                        bluetoothTileBack.setFunction(
-                                mContext.getString(R.string.quick_settings_bluetooth_not_discoverable_label));
-                    }
-                }
-            });
-            mModel.addBluetoothTile(bluetoothTileFront, new QuickSettingsModel.RefreshCallback() {
-                private boolean mPreviousState = false;
-
+            mModel.addBluetoothTile(bluetoothTile, new QuickSettingsModel.RefreshCallback() {
                 @Override
                 public void refreshView(QuickSettingsTileView unused, State state) {
                     BluetoothState bluetoothState = (BluetoothState) state;
