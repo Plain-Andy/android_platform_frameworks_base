@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.phone;
 
+import com.android.systemui.R;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -64,6 +66,11 @@ class QuickSettingsTileView extends FrameLayout {
         }
     }
 
+    void setLoading(boolean loading) {
+        findViewById(R.id.loading).setVisibility(loading ? View.VISIBLE : View.GONE);
+        findViewById(R.id.image).setVisibility(loading ? View.GONE : View.VISIBLE);
+    }
+
     @Override
     public void setVisibility(int vis) {
         if (QuickSettings.DEBUG_GONE_TILES) {
@@ -77,73 +84,5 @@ class QuickSettingsTileView extends FrameLayout {
             }
         }
         super.setVisibility(vis);
-    }
-
-    public void setOnPrepareListener(OnPrepareListener listener) {
-        if (mOnPrepareListener != listener) {
-            mOnPrepareListener = listener;
-            mPrepared = false;
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    updatePreparedState();
-                }
-            });
-        }
-    }
-
-    @Override
-    protected void onVisibilityChanged(View changedView, int visibility) {
-        super.onVisibilityChanged(changedView, visibility);
-        updatePreparedState();
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        updatePreparedState();
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        updatePreparedState();
-    }
-
-    private void updatePreparedState() {
-        if (mOnPrepareListener != null) {
-            if (isParentVisible()) {
-                if (!mPrepared) {
-                    mPrepared = true;
-                    mOnPrepareListener.onPrepare();
-                }
-            } else if (mPrepared) {
-                mPrepared = false;
-                mOnPrepareListener.onUnprepare();
-            }
-        }
-    }
-
-    private boolean isParentVisible() {
-        if (!isAttachedToWindow()) {
-            return false;
-        }
-        for (ViewParent current = getParent(); current instanceof View;
-                current = current.getParent()) {
-            View view = (View)current;
-            if (view.getVisibility() != VISIBLE) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Called when the view's parent becomes visible or invisible to provide
-     * an opportunity for the client to provide new content.
-     */
-    public interface OnPrepareListener {
-        void onPrepare();
-        void onUnprepare();
     }
 }
