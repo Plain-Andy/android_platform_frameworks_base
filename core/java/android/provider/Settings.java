@@ -2535,6 +2535,17 @@ public final class Settings {
          * instead
          * @hide
          */
+
+        /* Network speed indicator
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC = "status_bar_traffic";
+
+        /**
+         * @deprecated Use {@link android.provider.Settings.Global#DESK_UNDOCK_SOUND}
+         * instead
+         * @hide
+         */
         @Deprecated
         public static final String DESK_UNDOCK_SOUND = Global.DESK_UNDOCK_SOUND;
 
