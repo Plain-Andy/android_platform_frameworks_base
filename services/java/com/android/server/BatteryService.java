@@ -177,8 +177,10 @@ public final class BatteryService extends Binder {
         } catch (RemoteException e) {
             // Should never happen.
         }
+
         SettingsObserver observer = new SettingsObserver(new Handler());
         observer.observe();
+
     }
 
     void systemReady() {
