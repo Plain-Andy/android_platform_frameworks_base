@@ -60,7 +60,7 @@ public class DrawableContainer extends Drawable implements Drawable.Callback {
     private long mExitAnimationEnd;
     private Drawable mLastDrawable;
 
-    private Insets mInsets = Insets.NONE;
+    private Insets mInsets;
 
     // overrides from Drawable
 
@@ -88,10 +88,9 @@ public class DrawableContainer extends Drawable implements Drawable.Callback {
     @Override
     public boolean getPadding(Rect padding) {
         final Rect r = mDrawableContainerState.getConstantPadding();
-        boolean result;
+        boolean result = true;
         if (r != null) {
             padding.set(r);
-            result = (r.left | r.top | r.bottom | r.right) != 0;
         } else {
             if (mCurrDrawable != null) {
                 result = mCurrDrawable.getPadding(padding);
