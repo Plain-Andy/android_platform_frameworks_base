@@ -51,7 +51,6 @@ public class StorageVolume implements Parcelable {
 
     private String mUuid;
     private String mUserLabel;
-    private String mState;
 
     // StorageVolume extra for ACTION_MEDIA_REMOVED, ACTION_MEDIA_UNMOUNTED, ACTION_MEDIA_CHECKING,
     // ACTION_MEDIA_NOFS, ACTION_MEDIA_MOUNTED, ACTION_MEDIA_SHARED, ACTION_MEDIA_UNSHARED,
@@ -85,7 +84,6 @@ public class StorageVolume implements Parcelable {
         mOwner = in.readParcelable(null);
         mUuid = in.readString();
         mUserLabel = in.readString();
-        mState = in.readString();
     }
 
     public static StorageVolume fromTemplate(StorageVolume template, File path, UserHandle owner) {
@@ -230,14 +228,6 @@ public class StorageVolume implements Parcelable {
         return mUserLabel;
     }
 
-    public void setState(String state) {
-        mState = state;
-    }
-
-    public String getState() {
-        return mState;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof StorageVolume && mPath != null) {
@@ -274,7 +264,6 @@ public class StorageVolume implements Parcelable {
         pw.printPair("mOwner", mOwner);
         pw.printPair("mUuid", mUuid);
         pw.printPair("mUserLabel", mUserLabel);
-        pw.printPair("mState", mState);
         pw.decreaseIndent();
     }
 
@@ -309,6 +298,5 @@ public class StorageVolume implements Parcelable {
         parcel.writeParcelable(mOwner, flags);
         parcel.writeString(mUuid);
         parcel.writeString(mUserLabel);
-        parcel.writeString(mState);
     }
 }
