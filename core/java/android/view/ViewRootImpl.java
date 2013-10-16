@@ -3452,22 +3452,6 @@ public final class ViewRootImpl implements ViewParent,
             }
         }
 
-        protected boolean shouldDropInputEvent(QueuedInputEvent q) {
-            if (mView == null || !mAdded) {
-                Slog.w(TAG, "Dropping event due to root view being removed: " + q.mEvent);
-                return true;
-            } else if (!mAttachInfo.mHasWindowFocus &&
-                  !q.mEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER) &&
-                  !isTerminalInputEvent(q.mEvent)) {
-                // If this is a focused event and the window doesn't currently have input focus,
-                // then drop this event.  This could be an event that came back from the previous
-                // stage but the window has lost focus in the meantime.
-                Slog.w(TAG, "Dropping event due to no window focus: " + q.mEvent);
-                return true;
-            }
-            return false;
-        }
-
         void dump(String prefix, PrintWriter writer) {
             if (mNext != null) {
                 mNext.dump(prefix, writer);
