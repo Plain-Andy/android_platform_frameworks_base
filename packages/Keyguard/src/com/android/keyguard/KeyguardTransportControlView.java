@@ -102,9 +102,7 @@ public class KeyguardTransportControlView extends FrameLayout {
             new RemoteController.OnClientUpdateListener() {
         @Override
         public void onClientChange(boolean clearing) {
-            if (clearing) {
-                clearMetadata();
-            }
+            clearMetadata();
         }
 
         @Override
@@ -376,6 +374,7 @@ public class KeyguardTransportControlView extends FrameLayout {
         mAudioManager.unregisterRemoteController(mRemoteController);
         KeyguardUpdateMonitor.getInstance(mContext).removeCallback(mUpdateMonitor);
         mMetadata.clear();
+        mUserSeeking = false;
         removeCallbacks(mUpdateSeekBars);
     }
 
