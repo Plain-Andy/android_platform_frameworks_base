@@ -1041,6 +1041,10 @@ public final class ActivityThread {
             sendMessage(H.REQUEST_ASSIST_CONTEXT_EXTRAS, cmd);
         }
 
+        private void printRow(PrintWriter pw, String format, Object...objs) {
+            pw.println(String.format(format, objs));
+        }
+
         public void setCoreSettings(Bundle coreSettings) {
             sendMessage(H.SET_CORE_SETTINGS, coreSettings);
         }
