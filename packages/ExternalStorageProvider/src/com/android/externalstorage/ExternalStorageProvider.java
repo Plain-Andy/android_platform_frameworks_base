@@ -16,14 +16,12 @@
 
 package com.android.externalstorage;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.MatrixCursor.RowBuilder;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.CancellationSignal;
 import android.os.Environment;
 import android.os.FileObserver;
@@ -51,8 +49,6 @@ import java.util.Map;
 
 public class ExternalStorageProvider extends DocumentsProvider {
     private static final String TAG = "ExternalStorage";
-
-    private static final boolean LOG_INOTIFY = false;
 
     public static final String AUTHORITY = "com.android.externalstorage.documents";
 

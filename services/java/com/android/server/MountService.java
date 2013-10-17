@@ -56,7 +56,6 @@ import android.os.storage.StorageResultCode;
 import android.os.storage.StorageVolume;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.Slog;
 import android.util.Xml;
 
@@ -85,7 +84,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
