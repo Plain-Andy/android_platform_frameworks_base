@@ -46,8 +46,6 @@ import android.printservice.PrintServiceInfo;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -56,7 +54,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
@@ -132,9 +129,6 @@ public final class SelectPrinterFragment extends Fragment {
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (!((DestinationAdapter) mListView.getAdapter()).isActionable(position)) {
-                    return;
-                }
                 PrinterInfo printer = (PrinterInfo) mListView.getAdapter().getItem(position);
                 Activity activity = getActivity();
                 if (activity instanceof OnPrinterSelectedListener) {
@@ -145,8 +139,6 @@ public final class SelectPrinterFragment extends Fragment {
                 }
             }
         });
-
-        registerForContextMenu(mListView);
 
         return content;
     }
