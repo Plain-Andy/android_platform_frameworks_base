@@ -260,27 +260,28 @@ public class PrintJobConfigActivity extends Activity {
     }
 
     @Override
-    public void onPause() {
-       if (isFinishing()) {
-           if (mController != null && mController.hasStarted()) {
-               mController.finish();
-           }
-           if (mEditor != null && mEditor.isPrintConfirmed()
-                   && mController != null && mController.isFinished()) {
-                   mSpoolerProvider.getSpooler().setPrintJobState(mPrintJobId,
-                           PrintJobInfo.STATE_QUEUED, null);
-           } else {
-               mSpoolerProvider.getSpooler().setPrintJobState(mPrintJobId,
-                       PrintJobInfo.STATE_CANCELED, null);
-           }
-           if (mGeneratingPrintJobDialog != null) {
-               mGeneratingPrintJobDialog.dismiss();
-               mGeneratingPrintJobDialog = null;
-           }
-           mIPrintDocumentAdapter.unlinkToDeath(mDeathRecipient, 0);
-           mSpoolerProvider.destroy();
-       }
-        super.onPause();
+    protected void onDestroy() {
+        // We can safely do the work in here since at this point
+        // the system is bound to our (spooler) process which
+        // guarantees that this process will not be killed.
+        if (mController != null && mController.hasStarted()) {
+            mController.finish();
+        }
+        if (mEditor != null && mEditor.isPrintConfirmed()
+                && mController != null && mController.isFinished()) {
+                mSpoolerProvider.getSpooler().setPrintJobState(mPrintJobId,
+                        PrintJobInfo.STATE_QUEUED, null);
+        } else {
+            mSpoolerProvider.getSpooler().setPrintJobState(mPrintJobId,
+                    PrintJobInfo.STATE_CANCELED, null);
+        }
+        if (mGeneratingPrintJobDialog != null) {
+            mGeneratingPrintJobDialog.dismiss();
+            mGeneratingPrintJobDialog = null;
+        }
+        mIPrintDocumentAdapter.unlinkToDeath(mDeathRecipient, 0);
+        mSpoolerProvider.destroy();
+        super.onDestroy();
     }
 
     public boolean onTouchEvent(MotionEvent event) {

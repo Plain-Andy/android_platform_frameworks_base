@@ -311,7 +311,7 @@ public final class PrintManager {
             throw new IllegalArgumentException("documentAdapter cannot be null");
         }
         PrintDocumentAdapterDelegate delegate = new PrintDocumentAdapterDelegate(
-                (Activity) mContext, documentAdapter);
+                mContext, documentAdapter);
         try {
             Bundle result = mService.print(printJobName, delegate,
                     attributes, mContext.getPackageName(), mAppId, mUserId);
@@ -404,9 +404,12 @@ public final class PrintManager {
 
         private boolean mDestroyed;
 
-        public PrintDocumentAdapterDelegate(Activity activity,
+        public PrintDocumentAdapterDelegate(Context context,
                 PrintDocumentAdapter documentAdapter) {
-            mActivity = activity;
+            if (!(context instanceof Activity)) {
+                throw new IllegalStateException("Can print only from an activity");
+            }
+            mActivity = (Activity) context;
             mDocumentAdapter = documentAdapter;
             mHandler = new MyHandler(mActivity.getMainLooper());
             mActivity.getApplication().registerActivityLifecycleCallbacks(this);
@@ -541,18 +544,6 @@ public final class PrintManager {
                 }
 
                 doPendingWorkLocked();
-            }
-        }
-
-        @Override
-        public void cancel() {
-            // Start not called or finish called or destroyed - nothing to do.
-            if (!mStartReqeusted || mFinishRequested || mDestroyed) {
-                return;
-            }
-            // Request cancellation of pending work if needed.
-            synchronized (mLock) {
-                cancelPreviousCancellableOperationLocked();
             }
         }
 
