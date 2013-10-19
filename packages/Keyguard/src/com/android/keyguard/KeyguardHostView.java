@@ -1438,7 +1438,7 @@ public class KeyguardHostView extends KeyguardViewBase {
         mAppWidgetToShow = ss.appWidgetToShow;
         setInsets(ss.insets);
         if (DEBUG) Log.d(TAG, "onRestoreInstanceState, transport=" + mTransportState);
-        mSwitchPageRunnable.run();
+        post(mSwitchPageRunnable);
     }
 
     @Override
@@ -1472,21 +1472,10 @@ public class KeyguardHostView extends KeyguardViewBase {
     }
 
     private void showAppropriateWidgetPage() {
-        final int state = mTransportState;
-        final boolean transportAdded = ensureTransportPresentOrRemoved(state);
-        final int pageToShow = getAppropriateWidgetPage(state);
-        if (!transportAdded) {
-            mAppWidgetContainer.setCurrentPage(pageToShow);
-        } else if (state == TRANSPORT_VISIBLE) {
-            // If the transport was just added, we need to wait for layout to happen before
-            // we can set the current page.
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    mAppWidgetContainer.setCurrentPage(pageToShow);
-                }
-            });
-        }
+        int state = mTransportState;
+        ensureTransportPresentOrRemoved(state);
+        int pageToShow = getAppropriateWidgetPage(state);
+        mAppWidgetContainer.setCurrentPage(pageToShow);
     }
 
     /**
