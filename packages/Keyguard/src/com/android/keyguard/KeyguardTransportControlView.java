@@ -140,8 +140,7 @@ public class KeyguardTransportControlView extends FrameLayout {
 
     private class UpdateSeekBarRunnable implements  Runnable {
         public void run() {
-            boolean seekAble = updateOnce();
-            if (seekAble) {
+            if (updateSeekBars()) {
                 removeCallbacks(this);
                 postDelayed(this, 1000);
             }
@@ -302,6 +301,11 @@ public class KeyguardTransportControlView extends FrameLayout {
             mTransientSeek.setVisibility(INVISIBLE);
             mMetadataContainer.setVisibility(VISIBLE);
             cancelResetToMetadata();
+        }
+        if (enabled) {
+            mUpdateSeekBars.run();
+        } else {
+            removeCallbacks(mUpdateSeekBars);
         }
     }
 
@@ -620,6 +624,9 @@ public class KeyguardTransportControlView extends FrameLayout {
             case RemoteControlClient.PLAYSTATE_PLAYING:
                 imageResId = R.drawable.ic_media_pause;
                 imageDescId = R.string.keyguard_transport_pause_description;
+                if (mSeekEnabled) {
+                    mUpdateSeekBars.run();
+                }
                 break;
 
             case RemoteControlClient.PLAYSTATE_BUFFERING:
@@ -646,7 +653,10 @@ public class KeyguardTransportControlView extends FrameLayout {
         final int position = (int) mRemoteController.getEstimatedMediaPosition();
         if (DEBUG) Log.v(TAG, "Estimated time:" + position);
         if (position >= 0) {
-            mTransientSeekBar.setProgress(position);
+            if (DEBUG) Log.v(TAG, "Seek to " + position);
+            if (!mUserSeeking) {
+                mTransientSeekBar.setProgress(position);
+            }
             return true;
         }
         Log.w(TAG, "Updating seek bars; received invalid estimated media position (" +
