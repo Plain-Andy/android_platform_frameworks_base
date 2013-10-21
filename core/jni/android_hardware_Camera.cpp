@@ -391,6 +391,57 @@ void JNICameraContext::setCallbackMode(JNIEnv *env, bool installed, bool manualM
     }
 }
 
+static void android_hardware_Camera_setLongshot(JNIEnv *env, jobject thiz, jboolean enable)
+{
+    ALOGV("setLongshot");
+    JNICameraContext* context;
+    status_t rc;
+    sp<Camera> camera = get_native_camera(env, thiz, &context);
+    if (camera == 0) return;
+
+    if ( enable ) {
+        rc = camera->sendCommand(CAMERA_CMD_LONGSHOT_ON, 0, 0);
+    } else {
+        rc = camera->sendCommand(CAMERA_CMD_LONGSHOT_OFF, 0, 0);
+    }
+
+    if (rc != NO_ERROR) {
+       jniThrowException(env, "java/lang/RuntimeException", "enabling longshot mode failed");
+    }
+}
+
+static void android_hardware_Camera_sendHistogramData(JNIEnv *env, jobject thiz)
+ {
+   ALOGV("sendHistogramData" );
+   JNICameraContext* context;
+   status_t rc;
+   sp<Camera> camera = get_native_camera(env, thiz, &context);
+   if (camera == 0) return;
+
+   rc = camera->sendCommand(CAMERA_CMD_HISTOGRAM_SEND_DATA, 0, 0);
+
+   if (rc != NO_ERROR) {
+      jniThrowException(env, "java/lang/RuntimeException", "send histogram data failed");
+    }
+ }
+ static void android_hardware_Camera_setHistogramMode(JNIEnv *env, jobject thiz, jboolean mode)
+ {
+   ALOGV("setHistogramMode: mode:%d", (int)mode);
+   JNICameraContext* context;
+   status_t rc;
+   sp<Camera> camera = get_native_camera(env, thiz, &context);
+   if (camera == 0) return;
+
+   if(mode == true)
+      rc = camera->sendCommand(CAMERA_CMD_HISTOGRAM_ON, 0, 0);
+   else
+      rc = camera->sendCommand(CAMERA_CMD_HISTOGRAM_OFF, 0, 0);
+
+   if (rc != NO_ERROR) {
+      jniThrowException(env, "java/lang/RuntimeException", "set histogram mode failed");
+     }
+ }
+
 void JNICameraContext::addCallbackBuffer(
         JNIEnv *env, jbyteArray cbb, int msgType)
 {
@@ -970,6 +1021,9 @@ static JNINativeMethod camMethods[] = {
   { "native_sendHistogramData",
     "()V",
      (void *)android_hardware_Camera_sendHistogramData },
+ { "native_setLongshot",
+     "(Z)V",
+      (void *)android_hardware_Camera_setLongshot },
   { "native_setParameters",
     "(Ljava/lang/String;)V",
     (void *)android_hardware_Camera_setParameters },
