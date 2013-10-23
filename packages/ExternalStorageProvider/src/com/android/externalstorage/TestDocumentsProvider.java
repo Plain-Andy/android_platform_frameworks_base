@@ -57,9 +57,6 @@ public class TestDocumentsProvider extends DocumentsProvider {
 
     private static final boolean LAG = false;
 
-    private static final boolean ROOT_LAME_PROJECTION = false;
-    private static final boolean DOCUMENT_LAME_PROJECTION = false;
-
     private static final boolean ROOTS_WEDGE = false;
     private static final boolean ROOTS_CRASH = false;
     private static final boolean ROOTS_REFRESH = false;
