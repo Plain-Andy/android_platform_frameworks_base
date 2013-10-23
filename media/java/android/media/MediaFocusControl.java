@@ -1930,6 +1930,7 @@ public class MediaFocusControl implements OnFinished {
         int rccId = RemoteControlClient.RCSE_ID_UNREGISTERED;
         synchronized(mAudioFocusLock) {
             synchronized(mRCStack) {
+                boolean wasCurrentRcController = isCurrentRcController(mediaIntent);
                 // store the new display information
                 try {
                     for (int index = mRCStack.size()-1; index >= 0; index--) {
@@ -1976,9 +1977,9 @@ public class MediaFocusControl implements OnFinished {
                     Log.e(TAG, "Wrong index accessing RC stack, lock error? ", e);
                 }
 
-                // if the eventReceiver is at the top of the stack
+                // if the eventReceiver is now at the top of the stack but wasn't before
                 // then check for potential refresh of the remote controls
-                if (isCurrentRcController(mediaIntent)) {
+                if (isCurrentRcController(mediaIntent) && !wasCurrentRcController) {
                     checkUpdateRemoteControlDisplay_syncAfRcs(RC_INFO_ALL);
                 }
             }//synchronized(mRCStack)
