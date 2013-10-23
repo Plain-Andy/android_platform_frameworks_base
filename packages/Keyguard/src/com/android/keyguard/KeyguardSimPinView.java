@@ -46,10 +46,11 @@ public class KeyguardSimPinView extends KeyguardAbsKeyInputView
         implements KeyguardSecurityView, OnEditorActionListener, TextWatcher {
     private static final String LOG_TAG = "KeyguardSimPinView";
     private static final boolean DEBUG = KeyguardViewMediator.DEBUG;
-    public static final String TAG = "KeyguardSimPinView";
 
     private ProgressDialog mSimUnlockProgressDialog = null;
     private CheckSimPin mCheckSimPinThread;
+
+    private AlertDialog mRemainingAttemptsDialog;
 
     private AlertDialog mRemainingAttemptsDialog;
 
@@ -170,10 +171,8 @@ public class KeyguardSimPinView extends KeyguardAbsKeyInputView
         @Override
         public void run() {
             try {
-                Log.v(TAG, "call supplyPinReportResult()");
                 final int[] result = ITelephony.Stub.asInterface(ServiceManager
                         .checkService("phone")).supplyPinReportResult(mPin);
-                Log.v(TAG, "supplyPinReportResult returned: " + result[0] + " " + result[1]);
                 post(new Runnable() {
                     public void run() {
                         onSimCheckResponse(result[0], result[1]);
@@ -233,8 +232,9 @@ public class KeyguardSimPinView extends KeyguardAbsKeyInputView
 
         getSimUnlockProgressDialog().show();
 
-        if (mCheckSimPinThread == null) {
-            mCheckSimPinThread = new CheckSimPin(mPasswordEntry.getText().toString()) {
+        if (!mSimCheckInProgress) {
+            mSimCheckInProgress = true; // there should be only one
+            new CheckSimPin(mPasswordEntry.getText().toString()) {
                 void onSimCheckResponse(final int result, final int attemptsRemaining) {
                     post(new Runnable() {
                         public void run() {
