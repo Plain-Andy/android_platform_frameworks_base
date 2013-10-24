@@ -106,7 +106,7 @@ class DisplayContent {
     Region mTouchExcludeRegion = new Region();
 
     /** Save allocating when retrieving tasks */
-    private ArrayList<Task> mTaskHistory = new ArrayList<Task>();
+    ArrayList<Task> mTaskHistory = new ArrayList<Task>();
 
     /** Save allocating when calculating rects */
     Rect mTmpRect = new Rect();
@@ -159,6 +159,12 @@ class DisplayContent {
         return mStackBoxes.get(0).mStack != mHomeStack;
     }
 
+    void moveStack(TaskStack stack, boolean toTop) {
+        mStackHistory.remove(stack);
+        mStackHistory.add(toTop ? mStackHistory.size() : 0, stack);
+        mService.moveStackWindowsLocked(this);
+    }
+
     public boolean isPrivate() {
         return (mDisplay.getFlags() & Display.FLAG_PRIVATE) != 0;
     }
@@ -193,7 +199,6 @@ class DisplayContent {
         }
 
         mTaskHistory.add(taskNdx, task);
-        EventLog.writeEvent(EventLogTags.WM_TASK_MOVED, task.taskId, toTop ? 1 : 0, taskNdx);
     }
 
     void removeTask(Task task) {
