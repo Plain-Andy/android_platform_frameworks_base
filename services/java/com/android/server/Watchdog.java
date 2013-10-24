@@ -61,6 +61,12 @@ public class Watchdog extends Thread {
     static final long DEFAULT_TIMEOUT = DB ? 10*1000 : 60*1000;
     static final long CHECK_INTERVAL = DEFAULT_TIMEOUT / 2;
 
+    // These are temporally ordered: larger values as lateness increases
+    static final int COMPLETED = 0;
+    static final int WAITING = 1;
+    static final int WAITED_HALF = 2;
+    static final int OVERDUE = 3;
+
     // Which native processes to dump into dropbox's stack traces
     public static final String[] NATIVE_STACKS_OF_INTEREST = new String[] {
         "/system/bin/mediaserver",
