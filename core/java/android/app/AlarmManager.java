@@ -141,6 +141,7 @@ public class AlarmManager
      * broadcast.  Recurring alarms that have gone undelivered because the
      * phone was asleep may have a count greater than one when delivered.  
      *
+     * <div class="note">
      * <p>
      * <b>Note:</b> Beginning in API 19, the trigger time passed to this method
      * is treated as inexact: the alarm will not be delivered before this time, but
@@ -153,16 +154,17 @@ public class AlarmManager
      * <p>
      * With the new batching policy, delivery ordering guarantees are not as
      * strong as they were previously.  If the application sets multiple alarms,
-     * it is possible that these alarms' <i>actual</i> delivery ordering may not match
-     * the order of their <i>requested</i> delivery times.  If your application has
+     * it is possible that these alarms' <em>actual</em> delivery ordering may not match
+     * the order of their <em>requested</em> delivery times.  If your application has
      * strong ordering requirements there are other APIs that you can use to get
      * the necessary behavior; see {@link #setWindow(int, long, long, PendingIntent)}
      * and {@link #setExact(int, long, PendingIntent)}.
      *
      * <p>
-     * <b>Note:</b> Applications whose targetSdkVersion is before API 19 will
+     * Applications whose {@code targetSdkVersion} is before API 19 will
      * continue to get the previous alarm behavior: all of their scheduled alarms
      * will be treated as exact.
+     * </div>
      *
      * @param type One of {@link #ELAPSED_REALTIME}, {@link #ELAPSED_REALTIME_WAKEUP},
      *        {@link #RTC}, or {@link #RTC_WAKEUP}.
@@ -215,11 +217,11 @@ public class AlarmManager
      * between alarms, then the approach to take is to use one-time alarms, 
      * scheduling the next one yourself when handling each alarm delivery.
      *
-     * <p>
+     * <p class="note">
      * <b>Note:</b> as of API 19, all repeating alarms are inexact.  If your
      * application needs precise delivery times then it must use one-time
      * exact alarms, rescheduling each time as described above. Legacy applications
-     * whose targetSdkVersion is earlier than API 19 will continue to have all
+     * whose {@code targetSdkVersion} is earlier than API 19 will continue to have all
      * of their alarms, including repeating alarms, treated as exact.
      *
      * @param type One of {@link #ELAPSED_REALTIME}, {@link #ELAPSED_REALTIME_WAKEUP},
@@ -259,18 +261,19 @@ public class AlarmManager
      * modest timeliness requirements for its alarms.
      *
      * <p>
-     * This method can also be used to achieve strict ordering guarantees by ensuring
-     * that the windows requested for each alarm do not intersect.
+     * This method can also be used to achieve strict ordering guarantees among
+     * multiple alarms by ensuring that the windows requested for each alarm do
+     * not intersect.
      *
      * <p>
      * When precise delivery is not required, applications should use the standard
      * {@link #set(int, long, PendingIntent)} method.  This will give the OS the most
-     * ability to minimize wakeups and battery use.  For alarms that must be delivered
+     * flexibility to minimize wakeups and battery use.  For alarms that must be delivered
      * at precisely-specified times with no acceptable variation, applications can use
      * {@link #setExact(int, long, PendingIntent)}.
      *
      * @param type One of {@link #ELAPSED_REALTIME}, {@link #ELAPSED_REALTIME_WAKEUP},
-     *        {@link #RTC}, or {@link #RTC_WAKEUP
+     *        {@link #RTC}, or {@link #RTC_WAKEUP}.
      * @param windowStartMillis The earliest time, in milliseconds, that the alarm should
      *        be delivered, expressed in the appropriate clock's units (depending on the alarm
      *        type).
@@ -414,6 +417,12 @@ public class AlarmManager
      * one-shot alarms with an appropriate window instead; see {@link
      * #setWindow(int, long, long, PendingIntent)} and
      * {@link #setExact(int, long, PendingIntent)}.
+     *
+     * <p class="note">
+     * As of API 19, all repeating alarms are inexact.  Because this method has
+     * been available since API 3, your application can safely call it and be
+     * assured that it will get similar behavior on both current and older versions
+     * of Android.
      *
      * @param type One of {@link #ELAPSED_REALTIME}, {@link #ELAPSED_REALTIME_WAKEUP},
      *        {@link #RTC}, or {@link #RTC_WAKEUP}.
