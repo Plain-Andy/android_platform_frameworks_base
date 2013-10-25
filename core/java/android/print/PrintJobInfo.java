@@ -23,7 +23,10 @@ import android.os.Parcelable;
 import java.util.Arrays;
 
 /**
- * This class represents the description of a print job.
+ * This class represents the description of a print job. The print job
+ * state includes properties such as its id, print attributes used for
+ * generating the content, and so on. Note that the print jobs state may
+ * change over time and this class represents a snapshot of this state.
  */
 public final class PrintJobInfo implements Parcelable {
 
@@ -94,7 +97,7 @@ public final class PrintJobInfo implements Parcelable {
     public static final int STATE_BLOCKED = 4;
 
     /**
-     * Print job state: The print job was successfully printed.
+     * Print job state: The print job is successfully printed.
      * This is a terminal state.
      * <p>
      * Next valid states: None
@@ -104,15 +107,14 @@ public final class PrintJobInfo implements Parcelable {
 
     /**
      * Print job state: The print job was printing but printing failed.
-     * This is a terminal state.
      * <p>
-     * Next valid states: None
+     * Next valid states: {@link #STATE_CANCELED}, {@link #STATE_STARTED}
      * </p>
      */
     public static final int STATE_FAILED = 6;
 
     /**
-     * Print job state: The print job was canceled.
+     * Print job state: The print job is canceled.
      * This is a terminal state.
      * <p>
      * Next valid states: None
@@ -299,6 +301,14 @@ public final class PrintJobInfo implements Parcelable {
      * Gets the current job state.
      *
      * @return The job state.
+     *
+     * @see #STATE_CREATED
+     * @see #STATE_QUEUED
+     * @see #STATE_STARTED
+     * @see #STATE_COMPLETED
+     * @see #STATE_BLOCKED
+     * @see #STATE_FAILED
+     * @see #STATE_CANCELED
      */
     public int getState() {
         return mState;
@@ -665,7 +675,7 @@ public final class PrintJobInfo implements Parcelable {
          * Constructor.
          *
          * @param prototype Prototype to use as a starting point.
-         * Can be null.
+         * Can be <code>null</code>.
          */
         public Builder(PrintJobInfo prototype) {
             mPrototype = (prototype != null)
