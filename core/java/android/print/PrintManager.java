@@ -55,7 +55,6 @@ import java.util.Map;
  * PrintManager printManager =
  *         (PrintManager) context.getSystemService(Context.PRINT_SERVICE);
  * </pre>
- * 
  * <h3>Print mechanics</h3>
  * <p>
  * The key idea behind printing on the platform is that the content to be printed
