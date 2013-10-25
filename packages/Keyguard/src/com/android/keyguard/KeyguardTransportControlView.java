@@ -65,6 +65,7 @@ public class KeyguardTransportControlView extends FrameLayout {
     protected static final String TAG = "TransportControlView";
 
     private static final boolean ANIMATE_TRANSITIONS = true;
+    protected static final long QUIESCENT_PLAYBACK_FACTOR = 1000;
 
     private ViewGroup mMetadataContainer;
     private ViewGroup mInfoContainer;
@@ -90,8 +91,7 @@ public class KeyguardTransportControlView extends FrameLayout {
     private boolean mSeekEnabled;
     private java.text.DateFormat mFormat;
 
-    private Date mTimeElapsed;
-    private Date mTrackDuration;
+    private Date mTempDate = new Date();
 
     /**
      * The metadata which should be populated into the view once we've been attached
@@ -143,7 +143,8 @@ public class KeyguardTransportControlView extends FrameLayout {
 
     private class UpdateSeekBarRunnable implements  Runnable {
         public void run() {
-            if (updateSeekBars()) {
+            boolean seekAble = updateOnce();
+            if (seekAble) {
                 removeCallbacks(this);
                 postDelayed(this, 1000);
             }
@@ -305,11 +306,6 @@ public class KeyguardTransportControlView extends FrameLayout {
             mMetadataContainer.setVisibility(VISIBLE);
             cancelResetToMetadata();
         }
-        if (enabled) {
-            mUpdateSeekBars.run();
-        } else {
-            removeCallbacks(mUpdateSeekBars);
-        }
     }
 
     public void setTransportControlCallback(KeyguardHostView.TransportControlCallback
@@ -380,7 +376,6 @@ public class KeyguardTransportControlView extends FrameLayout {
         mAudioManager.unregisterRemoteController(mRemoteController);
         KeyguardUpdateMonitor.getInstance(mContext).removeCallback(mUpdateMonitor);
         mMetadata.clear();
-        mUserSeeking = false;
         removeCallbacks(mUpdateSeekBars);
     }
 
@@ -538,18 +533,12 @@ public class KeyguardTransportControlView extends FrameLayout {
 
     void updateSeekDisplay() {
         if (mMetadata != null && mRemoteController != null && mFormat != null) {
-            if (mTimeElapsed == null) {
-                mTimeElapsed = new Date();
-            }
-            if (mTrackDuration == null) {
-                mTrackDuration = new Date();
-            }
-            mTimeElapsed.setTime(mRemoteController.getEstimatedMediaPosition());
-            mTrackDuration.setTime(mMetadata.duration);
-            mTransientSeekTimeElapsed.setText(mFormat.format(mTimeElapsed));
-            mTransientSeekTimeTotal.setText(mFormat.format(mTrackDuration));
+            mTempDate.setTime(mRemoteController.getEstimatedMediaPosition());
+            mTransientSeekTimeElapsed.setText(mFormat.format(mTempDate));
+            mTempDate.setTime(mMetadata.duration);
+            mTransientSeekTimeTotal.setText(mFormat.format(mTempDate));
 
-            if (DEBUG) Log.d(TAG, "updateSeekDisplay timeElapsed=" + mTimeElapsed +
+            if (DEBUG) Log.d(TAG, "updateSeekDisplay timeElapsed=" + mTempDate +
                     " duration=" + mMetadata.duration);
         }
     }
@@ -633,9 +622,6 @@ public class KeyguardTransportControlView extends FrameLayout {
             case RemoteControlClient.PLAYSTATE_PLAYING:
                 imageResId = R.drawable.ic_media_pause;
                 imageDescId = R.string.keyguard_transport_pause_description;
-                if (mSeekEnabled) {
-                    mUpdateSeekBars.run();
-                }
                 break;
 
             case RemoteControlClient.PLAYSTATE_BUFFERING:
@@ -662,10 +648,7 @@ public class KeyguardTransportControlView extends FrameLayout {
         final int position = (int) mRemoteController.getEstimatedMediaPosition();
         if (DEBUG) Log.v(TAG, "Estimated time:" + position);
         if (position >= 0) {
-            if (DEBUG) Log.v(TAG, "Seek to " + position);
-            if (!mUserSeeking) {
-                mTransientSeekBar.setProgress(position);
-            }
+            mTransientSeekBar.setProgress(position);
             return true;
         }
         Log.w(TAG, "Updating seek bars; received invalid estimated media position (" +
