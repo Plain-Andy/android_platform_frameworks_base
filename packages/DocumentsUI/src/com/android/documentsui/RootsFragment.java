@@ -146,13 +146,6 @@ public class RootsFragment extends Fragment {
             mList.setLongClickable(false);
         }
 
-        if (state.action == ACTION_GET_CONTENT) {
-            mList.setOnItemLongClickListener(mItemLongClickListener);
-        } else {
-            mList.setOnItemLongClickListener(null);
-            mList.setLongClickable(false);
-        }
-
         getLoaderManager().restartLoader(2, null, mCallbacks);
     }
 
