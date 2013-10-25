@@ -876,12 +876,9 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
         final boolean hardKeyShown = haveHardKeyboard
                 && conf.hardKeyboardHidden
                         != Configuration.HARDKEYBOARDHIDDEN_YES;
-        final boolean isScreenLocked =
-                mKeyguardManager != null && mKeyguardManager.isKeyguardLocked();
-        final boolean isScreenSecurelyLocked =
-                isScreenLocked && mKeyguardManager.isKeyguardSecure();
-        final boolean inputShown = mInputShown && (!isScreenLocked || mInputBoundToKeyguard);
-        final boolean inputActive = !isScreenSecurelyLocked && (inputShown || hardKeyShown);
+
+        final boolean isScreenLocked = isKeyguardLocked();
+        final boolean inputActive = !isScreenLocked && (mInputShown || hardKeyShown);
         // We assume the softkeyboard is shown when the input is active as long as the
         // hard keyboard is not shown.
         final boolean inputVisible = inputActive && !hardKeyShown;
