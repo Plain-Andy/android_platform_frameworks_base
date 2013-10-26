@@ -260,28 +260,27 @@ public class PrintJobConfigActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
-        // We can safely do the work in here since at this point
-        // the system is bound to our (spooler) process which
-        // guarantees that this process will not be killed.
-        if (mController != null && mController.hasStarted()) {
-            mController.finish();
-        }
-        if (mEditor != null && mEditor.isPrintConfirmed()
-                && mController != null && mController.isFinished()) {
-                mSpoolerProvider.getSpooler().setPrintJobState(mPrintJobId,
-                        PrintJobInfo.STATE_QUEUED, null);
-        } else {
-            mSpoolerProvider.getSpooler().setPrintJobState(mPrintJobId,
-                    PrintJobInfo.STATE_CANCELED, null);
-        }
-        if (mGeneratingPrintJobDialog != null) {
-            mGeneratingPrintJobDialog.dismiss();
-            mGeneratingPrintJobDialog = null;
-        }
-        mIPrintDocumentAdapter.unlinkToDeath(mDeathRecipient, 0);
-        mSpoolerProvider.destroy();
-        super.onDestroy();
+    public void onPause() {
+       if (isFinishing()) {
+           if (mController != null && mController.hasStarted()) {
+               mController.finish();
+           }
+           if (mEditor != null && mEditor.isPrintConfirmed()
+                   && mController != null && mController.isFinished()) {
+                   mSpoolerProvider.getSpooler().setPrintJobState(mPrintJobId,
+                           PrintJobInfo.STATE_QUEUED, null);
+           } else {
+               mSpoolerProvider.getSpooler().setPrintJobState(mPrintJobId,
+                       PrintJobInfo.STATE_CANCELED, null);
+           }
+           if (mGeneratingPrintJobDialog != null) {
+               mGeneratingPrintJobDialog.dismiss();
+               mGeneratingPrintJobDialog = null;
+           }
+           mIPrintDocumentAdapter.unlinkToDeath(mDeathRecipient, 0);
+           mSpoolerProvider.destroy();
+       }
+        super.onPause();
     }
 
     public boolean onTouchEvent(MotionEvent event) {
@@ -1530,13 +1529,9 @@ public class PrintJobConfigActivity extends Activity {
                                 builder.append(',');
                             }
                             PageRange pageRange = pageRanges[i];
-                            final int shownStartPage = pageRange.getStart() + 1;
-                            final int shownEndPage = pageRange.getEnd() + 1;
-                            builder.append(shownStartPage);
-                            if (shownStartPage != shownEndPage) {
-                                builder.append('-');
-                                builder.append(shownEndPage);
-                            }
+                            builder.append(pageRange.getStart());
+                            builder.append('-');
+                            builder.append(pageRange.getEnd());
                         }
                         mPageRangeEditText.setText(builder.toString());
                     }
