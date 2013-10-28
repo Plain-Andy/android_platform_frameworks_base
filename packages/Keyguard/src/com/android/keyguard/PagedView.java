@@ -1938,7 +1938,6 @@ public abstract class PagedView extends ViewGroup implements ViewGroup.OnHierarc
 
         if (isWarping()) {
             dispatchOnPageEndWarp();
-            notifyPageSwitching(whichPage);
             resetPageWarp();
         } else {
             notifyPageSwitching(whichPage);

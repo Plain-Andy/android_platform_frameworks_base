@@ -120,12 +120,12 @@ public class KeyguardViewStateManager implements
 
     public void fadeOutSecurity(int duration) {
         ((View) mKeyguardSecurityContainer).animate().alpha(0f).setDuration(duration)
-                .setListener(mPauseListener);
+                .setListener(mPauseListener).start();
     }
 
     public void fadeInSecurity(int duration) {
         ((View) mKeyguardSecurityContainer).animate().alpha(1f).setDuration(duration)
-                .setListener(mResumeListener);
+                .setListener(mResumeListener).start();
     }
 
     public void onPageBeginMoving() {
