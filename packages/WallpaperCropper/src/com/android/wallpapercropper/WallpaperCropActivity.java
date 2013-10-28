@@ -111,24 +111,12 @@ public class WallpaperCropActivity extends Activity {
                 });
 
         // Load image in background
-        final BitmapRegionTileSource.UriBitmapSource bitmapSource =
-                new BitmapRegionTileSource.UriBitmapSource(this, imageUri, 1024);
-        Runnable onLoad = new Runnable() {
-            public void run() {
-                if (bitmapSource.getLoadingState() != BitmapSource.State.LOADED) {
-                    Toast.makeText(WallpaperCropActivity.this,
-                            getString(R.string.wallpaper_load_fail),
-                            Toast.LENGTH_LONG).show();
-                    finish();
-                }
-            }
-        };
-        setCropViewTileSource(bitmapSource, true, false, onLoad);
+        setCropViewTileSource(
+                new BitmapRegionTileSource.UriBitmapSource(this, imageUri, 1024), true, false);
     }
 
-    public void setCropViewTileSource(
-            final BitmapRegionTileSource.BitmapSource bitmapSource, final boolean touchEnabled,
-            final boolean moveToLeft, final Runnable postExecute) {
+    public void setCropViewTileSource(final BitmapRegionTileSource.BitmapSource bitmapSource,
+            final boolean touchEnabled, final boolean moveToLeft) {
         final Context context = WallpaperCropActivity.this;
         final View progressView = findViewById(R.id.loading);
         final AsyncTask<Void, Void, Void> loadBitmapTask = new AsyncTask<Void, Void, Void>() {
@@ -141,17 +129,12 @@ public class WallpaperCropActivity extends Activity {
             protected void onPostExecute(Void arg) {
                 if (!isCancelled()) {
                     progressView.setVisibility(View.INVISIBLE);
-                    if (bitmapSource.getLoadingState() == BitmapSource.State.LOADED) {
-                        mCropView.setTileSource(
-                                new BitmapRegionTileSource(context, bitmapSource), null);
-                        mCropView.setTouchEnabled(touchEnabled);
-                        if (moveToLeft) {
-                            mCropView.moveToLeft();
-                        }
+                    mCropView.setTileSource(
+                            new BitmapRegionTileSource(context, bitmapSource), null);
+                    mCropView.setTouchEnabled(touchEnabled);
+                    if (moveToLeft) {
+                        mCropView.moveToLeft();
                     }
-                }
-                if (postExecute != null) {
-                    postExecute.run();
                 }
             }
         };
