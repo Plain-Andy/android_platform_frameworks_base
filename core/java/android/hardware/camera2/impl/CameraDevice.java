@@ -297,6 +297,10 @@ public class CameraDevice implements android.hardware.camera2.CameraDevice {
             }
 
             if (repeating) {
+                // Queue for deletion after in-flight requests finish
+                if (mRepeatingRequestId != REQUEST_ID_NONE) {
+                    mRepeatingRequestIdDeletedList.add(mRepeatingRequestId);
+                }
                 mRepeatingRequestId = requestId;
             }
 
@@ -588,7 +592,7 @@ public class CameraDevice implements android.hardware.camera2.CameraDevice {
                 holder = CameraDevice.this.mCaptureListenerMap.get(requestId);
 
                 // Clean up listener once we no longer expect to see it.
-                if (holder != null && !holder.isRepeating() && !quirkIsPartialResult) {
+                if (holder != null && !holder.isRepeating()) {
                     CameraDevice.this.mCaptureListenerMap.remove(requestId);
                 }
 
@@ -598,7 +602,7 @@ public class CameraDevice implements android.hardware.camera2.CameraDevice {
                 // If we received a result for a repeating request and have
                 // prior repeating requests queued for deletion, remove those
                 // requests from mCaptureListenerMap.
-                if (holder != null && holder.isRepeating() && !quirkIsPartialResult
+                if (holder != null && holder.isRepeating()
                         && mRepeatingRequestIdDeletedList.size() > 0) {
                     Iterator<Integer> iter = mRepeatingRequestIdDeletedList.iterator();
                     while (iter.hasNext()) {
