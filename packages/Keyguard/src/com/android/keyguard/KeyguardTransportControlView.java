@@ -91,7 +91,7 @@ public class KeyguardTransportControlView extends FrameLayout {
     private java.text.DateFormat mFormat;
 
     private Date mTimeElapsed;
-    private Date mTimeRemaining;
+    private Date mTrackDuration;
 
     /**
      * The metadata which should be populated into the view once we've been attached
@@ -539,16 +539,16 @@ public class KeyguardTransportControlView extends FrameLayout {
             if (mTimeElapsed == null) {
                 mTimeElapsed = new Date();
             }
-            if (mTimeRemaining == null) {
-                mTimeRemaining = new Date();
+            if (mTrackDuration == null) {
+                mTrackDuration = new Date();
             }
             mTimeElapsed.setTime(mRemoteController.getEstimatedMediaPosition());
-            mTimeRemaining.setTime(mMetadata.duration - mTimeElapsed.getTime());
+            mTrackDuration.setTime(mMetadata.duration);
             mTransientSeekTimeElapsed.setText(mFormat.format(mTimeElapsed));
-            mTransientSeekTimeRemaining.setText(mFormat.format(mTimeRemaining));
+            mTransientSeekTimeTotal.setText(mFormat.format(mTrackDuration));
 
             if (DEBUG) Log.d(TAG, "updateSeekDisplay timeElapsed=" + mTimeElapsed +
-                    " duration=" + mMetadata.duration + " remaining=" + mTimeRemaining);
+                    " duration=" + mMetadata.duration);
         }
     }
 
