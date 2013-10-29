@@ -120,12 +120,12 @@ public class KeyguardViewStateManager implements
 
     public void fadeOutSecurity(int duration) {
         ((View) mKeyguardSecurityContainer).animate().alpha(0f).setDuration(duration)
-                .setListener(mPauseListener).start();
+                .setListener(mPauseListener);
     }
 
     public void fadeInSecurity(int duration) {
         ((View) mKeyguardSecurityContainer).animate().alpha(1f).setDuration(duration)
-                .setListener(mResumeListener).start();
+                .setListener(mResumeListener);
     }
 
     public void onPageBeginMoving() {
@@ -154,10 +154,6 @@ public class KeyguardViewStateManager implements
     public void onPageSwitching(View newPage, int newPageIndex) {
         if (mKeyguardWidgetPager != null && mChallengeLayout instanceof SlidingChallengeLayout) {
             boolean isCameraPage = newPage instanceof CameraWidgetFrame;
-            if (isCameraPage) {
-                CameraWidgetFrame camera = (CameraWidgetFrame) newPage;
-                camera.setUseFastTransition(mKeyguardWidgetPager.isWarping());
-            }
             SlidingChallengeLayout scl = (SlidingChallengeLayout) mChallengeLayout;
             scl.setChallengeInteractive(!isCameraPage);
             final int currentFlags = mKeyguardWidgetPager.getSystemUiVisibility();
