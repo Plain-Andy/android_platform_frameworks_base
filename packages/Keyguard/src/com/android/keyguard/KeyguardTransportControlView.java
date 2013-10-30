@@ -102,7 +102,9 @@ public class KeyguardTransportControlView extends FrameLayout {
             new RemoteController.OnClientUpdateListener() {
         @Override
         public void onClientChange(boolean clearing) {
-            clearMetadata();
+            if (clearing) {
+                clearMetadata();
+            }
         }
 
         @Override
