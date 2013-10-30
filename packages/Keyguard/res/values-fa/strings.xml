@@ -21,8 +21,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="keyguard_password_enter_pin_code" msgid="3037685796058495017">"پین کد را وارد کنید"</string>
-    <string name="keyguard_password_enter_puk_code" msgid="3035856550289724338">"PUK سیم کارت و کد پین جدید را تایپ کنید"</string>
-    <string name="keyguard_password_enter_puk_prompt" msgid="1801941051094974609">"کد PUK سیم کارت"</string>
+    <string name="keyguard_password_enter_puk_code" msgid="3035856550289724338">"‏PUK سیم کارت و کد پین جدید را تایپ کنید"</string>
+    <string name="keyguard_password_enter_puk_prompt" msgid="1801941051094974609">"‏کد PUK سیم کارت"</string>
     <string name="keyguard_password_enter_pin_prompt" msgid="3201151840570492538">"کد پین جدید سیم کارت"</string>
     <string name="keyguard_password_entry_touch_hint" msgid="7858547464982981384"><font size="17">"برای تایپ گذرواژه لمس کنید"</font></string>
     <string name="keyguard_password_enter_password_code" msgid="1054721668279049780">"برای بازکردن قفل، گذرواژه را وارد کنید"</string>
@@ -142,11 +142,11 @@
   </plurals>
     <string name="kg_password_wrong_puk_code_dead" msgid="7077536808291316208">"سیم کارت غیر قابل استفاده است. با شرکت مخابراتی‌تان تماس بگیرید."</string>
   <plurals name="kg_password_wrong_puk_code">
-    <item quantity="one" msgid="3256893607561060649">"کد PUK سیم کارت اشتباه است، <xliff:g id="NUMBER">%d</xliff:g> بار دیگر می‌توانید تلاش کنید و پس از آن سیم کارت به صورت دائم غیر قابل استفاده می‌شود."</item>
-    <item quantity="other" msgid="5477305226026342036">"کد PUK سیم کارت اشتباه است، <xliff:g id="NUMBER">%d</xliff:g> بار دیگر می‌توانید تلاش کنید و پس از آن سیم کارت به طور دائم غیر قابل استفاده می‌شود."</item>
+    <item quantity="one" msgid="3256893607561060649">"‏کد PUK سیم کارت اشتباه است، <xliff:g id="NUMBER">%d</xliff:g> بار دیگر می‌توانید تلاش کنید و پس از آن سیم کارت به صورت دائم غیر قابل استفاده می‌شود."</item>
+    <item quantity="other" msgid="5477305226026342036">"‏کد PUK سیم کارت اشتباه است، <xliff:g id="NUMBER">%d</xliff:g> بار دیگر می‌توانید تلاش کنید و پس از آن سیم کارت به طور دائم غیر قابل استفاده می‌شود."</item>
   </plurals>
     <string name="kg_password_pin_failed" msgid="6268288093558031564">"عملیات پین سیم کارت ناموفق بود!"</string>
-    <string name="kg_password_puk_failed" msgid="2838824369502455984">"عملیات PUK سیم کارت ناموفق بود!"</string>
+    <string name="kg_password_puk_failed" msgid="2838824369502455984">"‏عملیات PUK سیم کارت ناموفق بود!"</string>
     <string name="kg_pin_accepted" msgid="1448241673570020097">"کد پذیرفته شد!"</string>
     <string name="keyguard_transport_prev_description" msgid="8229108430245669854">"دکمه تراک قبلی"</string>
     <string name="keyguard_transport_next_description" msgid="4299258300283778305">"دکمه تراک بعدی"</string>
