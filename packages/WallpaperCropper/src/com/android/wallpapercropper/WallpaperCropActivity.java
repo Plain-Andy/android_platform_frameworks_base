@@ -111,12 +111,24 @@ public class WallpaperCropActivity extends Activity {
                 });
 
         // Load image in background
-        setCropViewTileSource(
-                new BitmapRegionTileSource.UriBitmapSource(this, imageUri, 1024), true, false);
+        final BitmapRegionTileSource.UriBitmapSource bitmapSource =
+                new BitmapRegionTileSource.UriBitmapSource(this, imageUri, 1024);
+        Runnable onLoad = new Runnable() {
+            public void run() {
+                if (bitmapSource.getLoadingState() != BitmapSource.State.LOADED) {
+                    Toast.makeText(WallpaperCropActivity.this,
+                            getString(R.string.wallpaper_load_fail),
+                            Toast.LENGTH_LONG).show();
+                    finish();
+                }
+            }
+        };
+        setCropViewTileSource(bitmapSource, true, false, onLoad);
     }
 
-    public void setCropViewTileSource(final BitmapRegionTileSource.BitmapSource bitmapSource,
-            final boolean touchEnabled, final boolean moveToLeft) {
+    public void setCropViewTileSource(
+            final BitmapRegionTileSource.BitmapSource bitmapSource, final boolean touchEnabled,
+            final boolean moveToLeft, final Runnable postExecute) {
         final Context context = WallpaperCropActivity.this;
         final View progressView = findViewById(R.id.loading);
         final AsyncTask<Void, Void, Void> loadBitmapTask = new AsyncTask<Void, Void, Void>() {
@@ -129,12 +141,17 @@ public class WallpaperCropActivity extends Activity {
             protected void onPostExecute(Void arg) {
                 if (!isCancelled()) {
                     progressView.setVisibility(View.INVISIBLE);
-                    mCropView.setTileSource(
-                            new BitmapRegionTileSource(context, bitmapSource), null);
-                    mCropView.setTouchEnabled(touchEnabled);
-                    if (moveToLeft) {
-                        mCropView.moveToLeft();
+                    if (bitmapSource.getLoadingState() == BitmapSource.State.LOADED) {
+                        mCropView.setTileSource(
+                                new BitmapRegionTileSource(context, bitmapSource), null);
+                        mCropView.setTouchEnabled(touchEnabled);
+                        if (moveToLeft) {
+                            mCropView.moveToLeft();
+                        }
                     }
+                }
+                if (postExecute != null) {
+                    postExecute.run();
                 }
             }
         };
@@ -239,10 +256,12 @@ public class WallpaperCropActivity extends Activity {
                 is = context.getContentResolver().openInputStream(uri);
                 bis = new BufferedInputStream(is);
                 ei.readExif(bis);
+                bis.close();
             } else {
                 is = res.openRawResource(resId);
                 bis = new BufferedInputStream(is);
                 ei.readExif(bis);
+                bis.close();
             }
             Integer ori = ei.getTagIntValue(ExifInterface.TAG_ORIENTATION);
             if (ori != null) {
@@ -573,7 +592,7 @@ public class WallpaperCropActivity extends Activity {
                 BitmapRegionDecoder decoder = null;
                 InputStream is = null;
                 try {
-                    is = regenerateInputStream();
+                    InputStream is = regenerateInputStream();
                     if (is == null) {
                         Log.w(LOGTAG, "cannot get input stream for uri=" + mInUri.toString());
                         failure = true;
@@ -601,7 +620,7 @@ public class WallpaperCropActivity extends Activity {
 
                 if (crop == null) {
                     // BitmapRegionDecoder has failed, try to crop in-memory
-                    is = regenerateInputStream();
+                    InputStream is = regenerateInputStream();
                     Bitmap fullSize = null;
                     if (is != null) {
                         BitmapFactory.Options options = new BitmapFactory.Options();
