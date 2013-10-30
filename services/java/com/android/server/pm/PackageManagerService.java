@@ -10085,23 +10085,29 @@ public class PackageManagerService extends IPackageManager.Stub {
             final int callingUserId = UserHandle.getCallingUserId();
             PreferredIntentResolver pir = mSettings.mPreferredActivities.get(callingUserId);
             if (pir != null) {
-                Intent intent = new Intent(filter.getAction(0)).addCategory(filter.getCategory(0));
-                if (filter.countDataSchemes() == 1) {
-                    Uri.Builder builder = new Uri.Builder();
-                    builder.scheme(filter.getDataScheme(0));
-                    intent.setData(builder.build());
+                Iterator<PreferredActivity> it = pir.filterIterator();
+                String action = filter.getAction(0);
+                String category = filter.getCategory(0);
+                while (it.hasNext()) {
+                    PreferredActivity pa = it.next();
+                    if ((pa.countActions() == 0) || (pa.countCategories() == 0)
+                            || (pa.getAction(0).equals(action)
+                                    && pa.getCategory(0).equals(category))) {
+                        if (removed == null) {
+                            removed = new ArrayList<PreferredActivity>();
+                        }
+                        removed.add(pa);
+                        if (DEBUG_PREFERRED) {
+                            Slog.i(TAG, "Removing preferred activity "
+                                    + pa.mPref.mComponent + ":");
+                            filter.dump(new LogPrinter(Log.INFO, TAG), "  ");
+                        }
+                    }
                 }
-                List<PreferredActivity> matches = pir.queryIntent(
-                        intent, null, true, callingUserId);
-                if (DEBUG_PREFERRED) {
-                    Slog.i(TAG, matches.size() + " preferred matches for " + intent);
-                }
-                for (int i = 0; i < matches.size(); i++) {
-                    PreferredActivity pa = matches.get(i);
-                    if (DEBUG_PREFERRED) {
-                        Slog.i(TAG, "Removing preferred activity "
-                                + pa.mPref.mComponent + ":");
-                        filter.dump(new LogPrinter(Log.INFO, TAG), "  ");
+                if (removed != null) {
+                    for (int i=0; i<removed.size(); i++) {
+                        PreferredActivity pa = removed.get(i);
+                        pir.removeFilter(pa);
                     }
                     pir.removeFilter(pa);
                 }
