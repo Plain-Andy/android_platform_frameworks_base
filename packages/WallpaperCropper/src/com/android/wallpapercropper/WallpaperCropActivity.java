@@ -256,12 +256,10 @@ public class WallpaperCropActivity extends Activity {
                 is = context.getContentResolver().openInputStream(uri);
                 bis = new BufferedInputStream(is);
                 ei.readExif(bis);
-                bis.close();
             } else {
                 is = res.openRawResource(resId);
                 bis = new BufferedInputStream(is);
                 ei.readExif(bis);
-                bis.close();
             }
             Integer ori = ei.getTagIntValue(ExifInterface.TAG_ORIENTATION);
             if (ori != null) {
@@ -592,7 +590,7 @@ public class WallpaperCropActivity extends Activity {
                 BitmapRegionDecoder decoder = null;
                 InputStream is = null;
                 try {
-                    InputStream is = regenerateInputStream();
+                    is = regenerateInputStream();
                     if (is == null) {
                         Log.w(LOGTAG, "cannot get input stream for uri=" + mInUri.toString());
                         failure = true;
@@ -620,7 +618,7 @@ public class WallpaperCropActivity extends Activity {
 
                 if (crop == null) {
                     // BitmapRegionDecoder has failed, try to crop in-memory
-                    InputStream is = regenerateInputStream();
+                    is = regenerateInputStream();
                     Bitmap fullSize = null;
                     if (is != null) {
                         BitmapFactory.Options options = new BitmapFactory.Options();
