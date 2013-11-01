@@ -681,7 +681,7 @@ public class ActionBarView extends AbsActionBarView {
         }
 
         // Make sure the home button has an accurate content description for accessibility.
-        updateHomeAccessibility(mUpGoerFive.isEnabled());
+        updateHomeAccessibility(!mUpGoerFive.isEnabled());
     }
 
     public void setIcon(Drawable icon) {
