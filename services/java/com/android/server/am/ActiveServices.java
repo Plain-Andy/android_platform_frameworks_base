@@ -307,7 +307,7 @@ public final class ActiveServices {
         ServiceRecord r = res.record;
         NeededUriGrants neededGrants = mAm.checkGrantUriPermissionFromIntentLocked(
                 callingUid, r.packageName, service, service.getFlags(), null);
-        if (unscheduleServiceRestartLocked(r, callingUid, false)) {
+        if (unscheduleServiceRestartLocked(r, callingUid)) {
             if (DEBUG_SERVICE) Slog.v(TAG, "START SERVICE WHILE RESTART PENDING: " + r);
         }
         r.lastActivity = SystemClock.uptimeMillis();
@@ -701,7 +701,7 @@ public final class ActiveServices {
         final long origId = Binder.clearCallingIdentity();
 
         try {
-            if (unscheduleServiceRestartLocked(s, callerApp.info.uid, false)) {
+            if (unscheduleServiceRestartLocked(s, callerApp.info.uid)) {
                 if (DEBUG_SERVICE) Slog.v(TAG, "BIND SERVICE WHILE RESTART PENDING: "
                         + s);
             }
@@ -1215,9 +1215,8 @@ public final class ActiveServices {
         bringUpServiceLocked(r, r.intent.getIntent().getFlags(), r.createdFromFg, true);
     }
 
-    private final boolean unscheduleServiceRestartLocked(ServiceRecord r, int callingUid,
-            boolean force) {
-        if (!force && r.restartDelay == 0) {
+    private final boolean unscheduleServiceRestartLocked(ServiceRecord r, int callingUid) {
+        if (r.restartDelay == 0) {
             return false;
         }
         // Remove from the restarting list; if the service is currently on the
@@ -1226,9 +1225,6 @@ public final class ActiveServices {
         boolean removed = mRestartingServices.remove(r);
         if (removed || callingUid != r.appInfo.uid) {
             r.resetRestartCounter();
-        }
-        if (removed) {
-            clearRestartingIfNeededLocked(r);
         }
         mAm.mHandler.removeCallbacks(r.restarter);
         return true;
@@ -1585,7 +1581,7 @@ public final class ActiveServices {
         smap.mServicesByName.remove(r.name);
         smap.mServicesByIntent.remove(r.intent);
         r.totalRestartCount = 0;
-        unscheduleServiceRestartLocked(r, 0, true);
+        unscheduleServiceRestartLocked(r, 0);
 
         // Also make sure it is not on the pending list.
         for (int i=mPendingServices.size()-1; i>=0; i--) {
