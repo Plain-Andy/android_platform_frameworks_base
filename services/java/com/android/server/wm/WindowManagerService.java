@@ -8276,9 +8276,7 @@ public class WindowManagerService extends IWindowManager.Stub
             // windows, since that means "perform layout as normal,
             // just don't display").
             if (!gone || !win.mHaveFrame || win.mLayoutNeeded
-                    || ((win.isConfigChanged() || win.setInsetsChanged()) &&
-                            (win.mAttrs.type == TYPE_KEYGUARD ||
-                            win.mAppToken != null && win.mAppToken.layoutConfigChanges))
+                    || win.isConfigChanged()
                     || win.mAttrs.type == TYPE_UNIVERSE_BACKGROUND) {
                 if (!win.mLayoutAttached) {
                     if (initial) {
