@@ -42,18 +42,18 @@
     <string name="serviceRegistered" msgid="6275019082598102493">"ההרשמה בוצעה בהצלחה."</string>
     <string name="serviceErased" msgid="1288584695297200972">"המחיקה בוצעה בהצלחה."</string>
     <string name="passwordIncorrect" msgid="7612208839450128715">"סיסמה שגויה."</string>
-    <string name="mmiComplete" msgid="8232527495411698359">"MMI הושלם."</string>
-    <string name="badPin" msgid="9015277645546710014">"ה-PIN הישן שהקלדת שגוי."</string>
-    <string name="badPuk" msgid="5487257647081132201">"ה-PUK שהקלדת שגוי."</string>
-    <string name="mismatchPin" msgid="609379054496863419">"קודי ה-PIN שהקלדת לא תואמים."</string>
-    <string name="invalidPin" msgid="3850018445187475377">"הקלד PIN שאורכו 4 עד 8 ספרות."</string>
-    <string name="invalidPuk" msgid="8761456210898036513">"הקלד PUK באורך 8 מספרים או יותר."</string>
-    <string name="needPuk" msgid="919668385956251611">"כרטיס ה-SIM נעול באמצעות PUK. הקלד את קוד PUK כדי לבטל את נעילתו."</string>
-    <string name="needPuk2" msgid="4526033371987193070">"הקלד PUK2 כדי לבטל את חסימת כרטיס ה-SIM."</string>
-    <string name="enablePin" msgid="209412020907207950">"לא הצלחת. הפעל נעילת SIM/RUIM."</string>
+    <string name="mmiComplete" msgid="8232527495411698359">"‏MMI הושלם."</string>
+    <string name="badPin" msgid="9015277645546710014">"‏ה-PIN הישן שהקלדת שגוי."</string>
+    <string name="badPuk" msgid="5487257647081132201">"‏ה-PUK שהקלדת שגוי."</string>
+    <string name="mismatchPin" msgid="609379054496863419">"‏קודי ה-PIN שהקלדת לא תואמים."</string>
+    <string name="invalidPin" msgid="3850018445187475377">"‏הקלד PIN שאורכו 4 עד 8 ספרות."</string>
+    <string name="invalidPuk" msgid="8761456210898036513">"‏הקלד PUK באורך 8 מספרים או יותר."</string>
+    <string name="needPuk" msgid="919668385956251611">"‏כרטיס ה-SIM נעול באמצעות PUK. הקלד את קוד PUK כדי לבטל את נעילתו."</string>
+    <string name="needPuk2" msgid="4526033371987193070">"‏הקלד PUK2 כדי לבטל את חסימת כרטיס ה-SIM."</string>
+    <string name="enablePin" msgid="209412020907207950">"‏לא הצלחת. הפעל נעילת SIM/RUIM."</string>
   <plurals name="pinpuk_attempts">
-    <item quantity="one" msgid="6596245285809790142">"נותר לך ניסיון <xliff:g id="NUMBER">%d</xliff:g> לפני נעילת כרטיס ה-SIM."</item>
-    <item quantity="other" msgid="7530597808358774740">"נותרו לך <xliff:g id="NUMBER">%d</xliff:g> ניסיונות לפני נעילת כרטיס ה-SIM."</item>
+    <item quantity="one" msgid="6596245285809790142">"‏נותר לך ניסיון <xliff:g id="NUMBER">%d</xliff:g> לפני נעילת כרטיס ה-SIM."</item>
+    <item quantity="other" msgid="7530597808358774740">"‏נותרו לך <xliff:g id="NUMBER">%d</xliff:g> ניסיונות לפני נעילת כרטיס ה-SIM."</item>
   </plurals>
     <string name="imei" msgid="2625429890869005782">"IMEI"</string>
     <string name="meid" msgid="4841221237681254195">"MEID"</string>
@@ -382,8 +382,6 @@
     <string name="permdesc_bindVpnService" msgid="2067845564581693905">"‏מאפשר למשתמש לבצע איגוד לממשק ברמה עליונה של שירות VPN. הרשאה זו לעולם אינה נחוצה לאפליקציות רגילים."</string>
     <string name="permlab_bindWallpaper" msgid="8716400279937856462">"קשור לטפט"</string>
     <string name="permdesc_bindWallpaper" msgid="7108428692595491668">"מאפשר למשתמש לבצע איגוד לממשק הרמה העליונה של טפט. הרשאה זו לעולם אינה נחוצה לאפליקציות רגילים."</string>
-    <string name="permlab_bindRemoteDisplay" msgid="1782923938029941960">"איגוד לצג מרוחק"</string>
-    <string name="permdesc_bindRemoteDisplay" msgid="1261242718727295981">"הרשאה זו מאפשרת למשתמש לבצע איגוד לממשק הרמה העליונה של צג רחוק. לעולם אינה אמורה להיות נחוצה לאפליקציות רגילות."</string>
     <string name="permlab_bindRemoteViews" msgid="5697987759897367099">"‏הכפפה לשירות Widget"</string>
     <string name="permdesc_bindRemoteViews" msgid="4717987810137692572">"‏מאפשר למשתמש לבצע איגוד לממשק הרמה העליונה של שירות Widget. הרשאה זו לעולם אינה נחוצה לאפליקציות רגילים."</string>
     <string name="permlab_bindDeviceAdmin" msgid="8704986163711455010">"קיים אינטראקציה עם מנהל המכשיר"</string>
