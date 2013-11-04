@@ -657,10 +657,10 @@ class WallpaperManagerService extends IWallpaperManager.Stub {
             if (width <= 0 || height <= 0) {
                 throw new IllegalArgumentException("width and height must be > 0");
             }
-            // Make sure it is at least as large as the display.
-            Point displaySize = getDefaultDisplaySize();
-            width = Math.max(width, displaySize.x);
-            height = Math.max(height, displaySize.y);
+            // Make sure it is at least as large as the display's maximum size.
+            int maxSizeDimension = getMaximumSizeDimension();
+            width = Math.max(width, maxSizeDimension);
+            height = Math.max(height, maxSizeDimension);
 
             if (width != wallpaper.width || height != wallpaper.height) {
                 wallpaper.width = width;
