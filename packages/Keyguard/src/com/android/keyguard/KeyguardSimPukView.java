@@ -45,6 +45,7 @@ public class KeyguardSimPukView extends KeyguardAbsKeyInputView
         implements KeyguardSecurityView, OnEditorActionListener, TextWatcher {
     private static final String LOG_TAG = "KeyguardSimPukView";
     private static final boolean DEBUG = KeyguardViewMediator.DEBUG;
+    public static final String TAG = "KeyguardSimPukView";
 
     private ProgressDialog mSimUnlockProgressDialog = null;
     private CheckSimPuk mCheckSimPukThread;
@@ -220,9 +221,10 @@ public class KeyguardSimPukView extends KeyguardAbsKeyInputView
         @Override
         public void run() {
             try {
+                Log.v(TAG, "call supplyPukReportResult()");
                 final int[] result = ITelephony.Stub.asInterface(ServiceManager
                         .checkService("phone")).supplyPukReportResult(mPuk, mPin);
-
+                Log.v(TAG, "supplyPukReportResult returned: " + result[0] + " " + result[1]);
                 post(new Runnable() {
                     public void run() {
                         onSimLockChangedResponse(result[0], result[1]);
@@ -296,9 +298,8 @@ public class KeyguardSimPukView extends KeyguardAbsKeyInputView
     private void updateSim() {
         getSimUnlockProgressDialog().show();
 
-        if (!mCheckInProgress) {
-            mCheckInProgress = true;
-            new CheckSimPuk(mPukText, mPinText) {
+        if (mCheckSimPukThread == null) {
+            mCheckSimPukThread = new CheckSimPuk(mPukText, mPinText) {
                 void onSimLockChangedResponse(final int result, final int attemptsRemaining) {
                     post(new Runnable() {
                         public void run() {
