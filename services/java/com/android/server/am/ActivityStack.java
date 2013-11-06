@@ -220,7 +220,7 @@ final class ActivityStack {
     /**
      * Is the privacy guard currently enabled?
      */
-    String mPrivacyGuardPackageName = null;
+    static String mPrivacyGuardPackageName = null;
 
     /**
      * Save the most recent screenshot for reuse. This keeps Recents from taking two identical
