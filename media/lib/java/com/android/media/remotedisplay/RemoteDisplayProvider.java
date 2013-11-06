@@ -16,7 +16,6 @@
 
 package com.android.media.remotedisplay;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -28,7 +27,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
-import android.provider.Settings;
 import android.util.ArrayMap;
 
 import java.util.Collection;
@@ -97,15 +95,12 @@ public abstract class RemoteDisplayProvider {
     private static final int MSG_SET_VOLUME = 5;
     private static final int MSG_ADJUST_VOLUME = 6;
 
-    private final Context mContext;
     private final ProviderStub mStub;
     private final ProviderHandler mHandler;
     private final ArrayMap<String, RemoteDisplay> mDisplays =
             new ArrayMap<String, RemoteDisplay>();
     private IRemoteDisplayCallback mCallback;
     private int mDiscoveryMode = DISCOVERY_MODE_NONE;
-
-    private PendingIntent mSettingsPendingIntent;
 
     /**
      * The {@link Intent} that must be declared as handled by the service.
@@ -145,16 +140,8 @@ public abstract class RemoteDisplayProvider {
      * @param context The application context for the remote display provider.
      */
     public RemoteDisplayProvider(Context context) {
-        mContext = context;
         mStub = new ProviderStub();
         mHandler = new ProviderHandler(context.getMainLooper());
-    }
-
-    /**
-     * Gets the context of the remote display provider.
-     */
-    public final Context getContext() {
-        return mContext;
     }
 
     /**
@@ -270,33 +257,6 @@ public abstract class RemoteDisplayProvider {
         publishState();
     }
 
-    /**
-     * Finds the remote display with the specified id, returns null if not found.
-     *
-     * @param id Id of the remote display.
-     * @return The display, or null if none.
-     */
-    public RemoteDisplay findRemoteDisplay(String id) {
-        return mDisplays.get(id);
-    }
-
-    /**
-     * Gets a pending intent to launch the remote display settings activity.
-     *
-     * @return A pending intent to launch the settings activity.
-     */
-    public PendingIntent getSettingsPendingIntent() {
-        if (mSettingsPendingIntent == null) {
-            Intent settingsIntent = new Intent(Settings.ACTION_WIFI_DISPLAY_SETTINGS);
-            settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            mSettingsPendingIntent = PendingIntent.getActivity(
-                    mContext, 0, settingsIntent, 0, null);
-        }
-        return mSettingsPendingIntent;
-    }
-
     void setCallback(IRemoteDisplayCallback callback) {
         mCallback = callback;
         publishState();
@@ -323,6 +283,10 @@ public abstract class RemoteDisplayProvider {
                 // system server died?
             }
         }
+    }
+
+    RemoteDisplay findRemoteDisplay(String id) {
+        return mDisplays.get(id);
     }
 
     final class ProviderStub extends IRemoteDisplayProvider.Stub {
