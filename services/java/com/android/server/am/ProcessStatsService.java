@@ -805,6 +805,7 @@ public final class ProcessStatsService extends IProcessStats.Stub {
             }
             return;
         } else if (aggregateHours != 0) {
+            pw.print("AGGREGATED OVER LAST "); pw.print(aggregateHours); pw.println(" HOURS:");
             dumpAggregatedStats(pw, aggregateHours, now, reqPackage, isCompact,
                     dumpDetails, dumpFullDetails, dumpAll, activeOnly);
             return;
@@ -871,11 +872,11 @@ public final class ProcessStatsService extends IProcessStats.Stub {
             }
         }
         if (!isCheckin) {
-            if (dumpAll) {
+            if (!currentOnly) {
                 if (sepNeeded) {
                     pw.println();
-                    pw.println("AGGREGATED OVER LAST 24 HOURS:");
                 }
+                pw.println("AGGREGATED OVER LAST 24 HOURS:");
                 dumpAggregatedStats(pw, 24, now, reqPackage, isCompact,
                         dumpDetails, dumpFullDetails, dumpAll, activeOnly);
                 pw.println();

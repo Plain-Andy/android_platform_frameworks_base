@@ -1226,6 +1226,9 @@ public final class ActiveServices {
         if (removed || callingUid != r.appInfo.uid) {
             r.resetRestartCounter();
         }
+        if (removed) {
+            r.clearRestarting(mAm.mProcessStats.getMemFactorLocked(), SystemClock.uptimeMillis());
+        }
         mAm.mHandler.removeCallbacks(r.restarter);
         return true;
     }
@@ -1269,7 +1272,7 @@ public final class ActiveServices {
         // We are now bringing the service up, so no longer in the
         // restarting state.
         if (mRestartingServices.remove(r)) {
-            clearRestartingIfNeededLocked(r);
+            r.clearRestarting(mAm.mProcessStats.getMemFactorLocked(), SystemClock.uptimeMillis());
         }
 
         // Make sure this service is no longer considered delayed, we are starting it now.
@@ -1843,9 +1846,6 @@ public final class ActiveServices {
                 }
             }
             if (finishing) {
-                if (r.app != null && !r.app.persistent) {
-                    r.app.services.remove(r);
-                }
                 r.app = null;
             }
         }
@@ -2058,23 +2058,11 @@ public final class ActiveServices {
         }
         app.connections.clear();
 
-        ServiceMap smap = getServiceMap(app.userId);
-
         // Now do remaining service cleanup.
         for (int i=app.services.size()-1; i>=0; i--) {
-            ServiceRecord sr = app.services.valueAt(i);
-            // Sanity check: if the service listed for the app is not one
-            // we actually are maintaining, drop it.
-            if (smap.mServicesByName.get(sr.name) != sr) {
-                ServiceRecord cur = smap.mServicesByName.get(sr.name);
-                Slog.wtf(TAG, "Service " + sr + " in process " + app
-                        + " not same as in map: " + cur);
-                app.services.removeAt(i);
-                continue;
-            }
-
             // Any services running in the application may need to be placed
             // back in the pending list.
+            ServiceRecord sr = app.services.valueAt(i);
             if (allowRestart && sr.crashCount >= 2 && (sr.serviceInfo.applicationInfo.flags
                     &ApplicationInfo.FLAG_PERSISTENT) == 0) {
                 Slog.w(TAG, "Service crashed " + sr.crashCount
@@ -2115,14 +2103,8 @@ public final class ActiveServices {
                 if (r.processName.equals(app.processName) &&
                         r.serviceInfo.applicationInfo.uid == app.info.uid) {
                     mRestartingServices.remove(i);
-                    clearRestartingIfNeededLocked(r);
-                }
-            }
-            for (int i=mPendingServices.size()-1; i>=0; i--) {
-                ServiceRecord r = mPendingServices.get(i);
-                if (r.processName.equals(app.processName) &&
-                        r.serviceInfo.applicationInfo.uid == app.info.uid) {
-                    mPendingServices.remove(i);
+                    r.clearRestarting(mAm.mProcessStats.getMemFactorLocked(),
+                            SystemClock.uptimeMillis());
                 }
             }
         }
