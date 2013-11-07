@@ -618,6 +618,7 @@ public class KeyguardViewMediator {
             }
         }
         KeyguardUpdateMonitor.getInstance(mContext).dispatchScreenTurndOff(why);
+        mKeyguardDisplayManager.show();
     }
 
     private void doKeyguardLaterLocked() {
@@ -1261,6 +1262,7 @@ public class KeyguardViewMediator {
             mKeyguardDonePending = false;
             updateActivityLockScreenState();
             adjustStatusBarLocked();
+            mKeyguardDisplayManager.hide();
         }
     }
 
