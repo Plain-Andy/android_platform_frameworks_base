@@ -806,6 +806,16 @@ class ServerThread {
             } catch (Throwable e) {
                 reportWtf("starting Print Service", e);
             }
+
+            if (!disableNonCoreServices) {
+                try {
+                    Slog.i(TAG, "Media Router Service");
+                    mediaRouter = new MediaRouterService(context);
+                    ServiceManager.addService(Context.MEDIA_ROUTER_SERVICE, mediaRouter);
+                } catch (Throwable e) {
+                    reportWtf("starting MediaRouterService", e);
+                }
+            }
         }
 
         // Before things start rolling, be sure we have decided whether

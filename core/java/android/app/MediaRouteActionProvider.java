@@ -73,27 +73,13 @@ public class MediaRouteActionProvider extends ActionProvider {
      * @param types The route types to match.
      */
     public void setRouteTypes(int types) {
-        if (mRouteTypes != types) {
-            // FIXME: We currently have no way of knowing whether the action provider
-            // is still needed by the UI.  Unfortunately this means the action provider
-            // may leak callbacks until garbage collection occurs.  This may result in
-            // media route providers doing more work than necessary in the short term
-            // while trying to discover routes that are no longer of interest to the
-            // application.  To solve this problem, the action provider will need some
-            // indication from the framework that it is being destroyed.
-            if (mRouteTypes != 0) {
-                mRouter.removeCallback(mCallback);
-            }
-            mRouteTypes = types;
-            if (types != 0) {
-                mRouter.addCallback(types, mCallback,
-                        MediaRouter.CALLBACK_FLAG_PASSIVE_DISCOVERY);
-            }
-            refreshRoute();
-
-            if (mButton != null) {
-                mButton.setRouteTypes(mRouteTypes);
-            }
+        if (mRouteTypes == types) return;
+        if (mRouteTypes != 0) {
+            mRouter.removeCallback(mCallback);
+        }
+        mRouteTypes = types;
+        if (types != 0) {
+            mRouter.addCallback(types, mCallback, MediaRouter.CALLBACK_FLAG_PASSIVE_DISCOVERY);
         }
     }
 

@@ -18,7 +18,6 @@ package android.media;
 
 import com.android.internal.util.Objects;
 
-import android.Manifest;
 import android.app.ActivityThread;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -61,6 +60,9 @@ public class MediaRouter {
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     static class Static implements DisplayManager.DisplayListener {
+        // Time between wifi display scans when actively scanning in milliseconds.
+        private static final int WIFI_DISPLAY_SCAN_INTERVAL = 15000;
+
         final Context mAppContext;
         final Resources mResources;
         final IAudioService mAudioService;
@@ -85,6 +87,13 @@ public class MediaRouter {
         final boolean mCanConfigureWifiDisplays;
         boolean mActivelyScanningWifiDisplays;
         String mPreviousActiveWifiDisplayAddress;
+
+        int mDiscoveryRequestRouteTypes;
+        boolean mDiscoverRequestActiveScan;
+
+        int mCurrentUserId = -1;
+        IMediaRouterClient mClient;
+        MediaRouterClientState mClientState;
 
         int mDiscoveryRequestRouteTypes;
         boolean mDiscoverRequestActiveScan;
@@ -254,7 +263,7 @@ public class MediaRouter {
                 }
                 if ((cbi.flags & CALLBACK_FLAG_PERFORM_ACTIVE_SCAN) != 0) {
                     activeScan = true;
-                    if ((cbi.type & ROUTE_TYPE_REMOTE_DISPLAY) != 0) {
+                    if ((cbi.type & (ROUTE_TYPE_LIVE_VIDEO | ROUTE_TYPE_REMOTE_DISPLAY)) != 0) {
                         activeScanWifiDisplay = true;
                     }
                 }
@@ -267,24 +276,15 @@ public class MediaRouter {
             }
 
             // Update wifi display scanning.
-            // TODO: All of this should be managed by the media router service.
-            if (mCanConfigureWifiDisplays) {
-                if (mSelectedRoute != null
-                        && mSelectedRoute.matchesTypes(ROUTE_TYPE_REMOTE_DISPLAY)) {
-                    // Don't scan while already connected to a remote display since
-                    // it may interfere with the ongoing transmission.
-                    activeScanWifiDisplay = false;
+            if (activeScanWifiDisplay) {
+                if (!mActivelyScanningWifiDisplays) {
+                    mActivelyScanningWifiDisplays = true;
+                    mHandler.post(mScanWifiDisplays);
                 }
-                if (activeScanWifiDisplay) {
-                    if (!mActivelyScanningWifiDisplays) {
-                        mActivelyScanningWifiDisplays = true;
-                        mDisplayService.startWifiDisplayScan();
-                    }
-                } else {
-                    if (mActivelyScanningWifiDisplays) {
-                        mActivelyScanningWifiDisplays = false;
-                        mDisplayService.stopWifiDisplayScan();
-                    }
+            } else {
+                if (mActivelyScanningWifiDisplays) {
+                    mActivelyScanningWifiDisplays = false;
+                    mHandler.removeCallbacks(mScanWifiDisplays);
                 }
             }
 
@@ -459,6 +459,138 @@ public class MediaRouter {
             }
         }
 
+        void setSelectedRoute(RouteInfo info, boolean explicit) {
+            // Must be non-reentrant.
+            mSelectedRoute = info;
+            publishClientSelectedRoute(explicit);
+        }
+
+        void rebindAsUser(int userId) {
+            if (mCurrentUserId != userId || userId < 0 || mClient == null) {
+                if (mClient != null) {
+                    try {
+                        mMediaRouterService.unregisterClient(mClient);
+                    } catch (RemoteException ex) {
+                        Log.e(TAG, "Unable to unregister media router client.", ex);
+                    }
+                    mClient = null;
+                }
+
+                mCurrentUserId = userId;
+
+                try {
+                    Client client = new Client();
+                    mMediaRouterService.registerClientAsUser(client,
+                            mAppContext.getPackageName(), userId);
+                    mClient = client;
+                } catch (RemoteException ex) {
+                    Log.e(TAG, "Unable to register media router client.", ex);
+                }
+
+                publishClientDiscoveryRequest();
+                publishClientSelectedRoute(false);
+                updateClientState();
+            }
+        }
+
+        void publishClientDiscoveryRequest() {
+            if (mClient != null) {
+                try {
+                    mMediaRouterService.setDiscoveryRequest(mClient,
+                            mDiscoveryRequestRouteTypes, mDiscoverRequestActiveScan);
+                } catch (RemoteException ex) {
+                    Log.e(TAG, "Unable to publish media router client discovery request.", ex);
+                }
+            }
+        }
+
+        void publishClientSelectedRoute(boolean explicit) {
+            if (mClient != null) {
+                try {
+                    mMediaRouterService.setSelectedRoute(mClient,
+                            mSelectedRoute != null ? mSelectedRoute.mGlobalRouteId : null,
+                            explicit);
+                } catch (RemoteException ex) {
+                    Log.e(TAG, "Unable to publish media router client selected route.", ex);
+                }
+            }
+        }
+
+        void updateClientState() {
+            // Update the client state.
+            mClientState = null;
+            if (mClient != null) {
+                try {
+                    mClientState = mMediaRouterService.getState(mClient);
+                } catch (RemoteException ex) {
+                    Log.e(TAG, "Unable to retrieve media router client state.", ex);
+                }
+            }
+            final ArrayList<MediaRouterClientState.RouteInfo> globalRoutes =
+                    mClientState != null ? mClientState.routes : null;
+            final String globallySelectedRouteId = mClientState != null ?
+                    mClientState.globallySelectedRouteId : null;
+
+            // Add or update routes.
+            final int globalRouteCount = globalRoutes != null ? globalRoutes.size() : 0;
+            for (int i = 0; i < globalRouteCount; i++) {
+                final MediaRouterClientState.RouteInfo globalRoute = globalRoutes.get(i);
+                RouteInfo route = findGlobalRoute(globalRoute.id);
+                if (route == null) {
+                    route = makeGlobalRoute(globalRoute);
+                    addRouteStatic(route);
+                } else {
+                    updateGlobalRoute(route, globalRoute);
+                }
+            }
+
+            // Synchronize state with the globally selected route.
+            if (globallySelectedRouteId != null) {
+                final RouteInfo route = findGlobalRoute(globallySelectedRouteId);
+                if (route == null) {
+                    Log.w(TAG, "Could not find new globally selected route: "
+                            + globallySelectedRouteId);
+                } else if (route != mSelectedRoute) {
+                    if (DEBUG) {
+                        Log.d(TAG, "Selecting new globally selected route: " + route);
+                    }
+                    selectRouteStatic(route.mSupportedTypes, route, false);
+                }
+            } else if (mSelectedRoute != null && mSelectedRoute.mGlobalRouteId != null) {
+                if (DEBUG) {
+                    Log.d(TAG, "Unselecting previous globally selected route: " + mSelectedRoute);
+                }
+                selectDefaultRouteStatic();
+            }
+
+            // Remove defunct routes.
+            outer: for (int i = mRoutes.size(); i-- > 0; ) {
+                final RouteInfo route = mRoutes.get(i);
+                final String globalRouteId = route.mGlobalRouteId;
+                if (globalRouteId != null) {
+                    for (int j = 0; j < globalRouteCount; j++) {
+                        MediaRouterClientState.RouteInfo globalRoute = globalRoutes.get(j);
+                        if (globalRouteId.equals(globalRoute.id)) {
+                            continue outer; // found
+                        }
+                    }
+                    // not found
+                    removeRouteStatic(route);
+                }
+            }
+        }
+
+        void requestSetVolume(RouteInfo route, int volume) {
+            if (route.mGlobalRouteId != null && mClient != null) {
+                try {
+                    mMediaRouterService.requestSetVolume(mClient,
+                            route.mGlobalRouteId, volume);
+                } catch (RemoteException ex) {
+                    Log.w(TAG, "Unable to request volume change.", ex);
+                }
+            }
+        }
+
         void requestUpdateVolume(RouteInfo route, int direction) {
             if (route.mGlobalRouteId != null && mClient != null) {
                 try {
@@ -477,14 +609,13 @@ public class MediaRouter {
             route.mDescription = globalRoute.description;
             route.mSupportedTypes = globalRoute.supportedTypes;
             route.mEnabled = globalRoute.enabled;
-            route.setRealStatusCode(globalRoute.statusCode);
+            route.setStatusCode(globalRoute.statusCode);
             route.mPlaybackType = globalRoute.playbackType;
             route.mPlaybackStream = globalRoute.playbackStream;
             route.mVolume = globalRoute.volume;
             route.mVolumeMax = globalRoute.volumeMax;
             route.mVolumeHandling = globalRoute.volumeHandling;
-            route.mPresentationDisplayId = globalRoute.presentationDisplayId;
-            route.updatePresentationDisplay();
+            route.mPresentationDisplay = getDisplayForGlobalRoute(globalRoute);
             return route;
         }
 
@@ -501,8 +632,7 @@ public class MediaRouter {
                 route.mDescription = globalRoute.description;
                 changed = true;
             }
-            final int oldSupportedTypes = route.mSupportedTypes;
-            if (oldSupportedTypes != globalRoute.supportedTypes) {
+            if (route.mSupportedTypes != globalRoute.supportedTypes) {
                 route.mSupportedTypes = globalRoute.supportedTypes;
                 changed = true;
             }
@@ -510,8 +640,8 @@ public class MediaRouter {
                 route.mEnabled = globalRoute.enabled;
                 changed = true;
             }
-            if (route.mRealStatusCode != globalRoute.statusCode) {
-                route.setRealStatusCode(globalRoute.statusCode);
+            if (route.mStatusCode != globalRoute.statusCode) {
+                route.setStatusCode(globalRoute.statusCode);
                 changed = true;
             }
             if (route.mPlaybackType != globalRoute.playbackType) {
@@ -537,15 +667,15 @@ public class MediaRouter {
                 changed = true;
                 volumeChanged = true;
             }
-            if (route.mPresentationDisplayId != globalRoute.presentationDisplayId) {
-                route.mPresentationDisplayId = globalRoute.presentationDisplayId;
-                route.updatePresentationDisplay();
+            final Display presentationDisplay = getDisplayForGlobalRoute(globalRoute);
+            if (route.mPresentationDisplay != presentationDisplay) {
+                route.mPresentationDisplay = presentationDisplay;
                 changed = true;
                 presentationDisplayChanged = true;
             }
 
             if (changed) {
-                dispatchRouteChanged(route, oldSupportedTypes);
+                dispatchRouteChanged(route);
             }
             if (volumeChanged) {
                 dispatchRouteVolumeChanged(route);
@@ -553,6 +683,19 @@ public class MediaRouter {
             if (presentationDisplayChanged) {
                 dispatchRoutePresentationDisplayChanged(route);
             }
+        }
+
+        Display getDisplayForGlobalRoute(MediaRouterClientState.RouteInfo globalRoute) {
+            // Ensure that the specified display is valid for presentations.
+            // This check will normally disallow the default display unless it was configured
+            // as a presentation display for some reason.
+            if (globalRoute.presentationDisplayId >= 0) {
+                Display display = mDisplayService.getDisplay(globalRoute.presentationDisplayId);
+                if (display != null && display.isPublicPresentation()) {
+                    return display;
+                }
+            }
+            return null;
         }
 
         RouteInfo findGlobalRoute(String globalRouteId) {
@@ -673,19 +816,6 @@ public class MediaRouter {
      * request discovery explicitly (except when using the support library API).
      */
     public static final int CALLBACK_FLAG_PASSIVE_DISCOVERY = 1 << 3;
-
-    /**
-     * Flag for {@link #isRouteAvailable}: Ignore the default route.
-     * <p>
-     * This flag is used to determine whether a matching non-default route is available.
-     * This constraint may be used to decide whether to offer the route chooser dialog
-     * to the user.  There is no point offering the chooser if there are no
-     * non-default choices.
-     * </p>
-     *
-     * @hide Future API ported from support library.  Revisit this later.
-     */
-    public static final int AVAILABILITY_FLAG_IGNORE_DEFAULT_ROUTE = 1 << 0;
 
     // Maps application contexts
     static final HashMap<Context, MediaRouter> sRouters = new HashMap<Context, MediaRouter>();
@@ -945,6 +1075,16 @@ public class MediaRouter {
 
         // The behavior of active scans may depend on the currently selected route.
         sStatic.updateDiscoveryRequest();
+    }
+
+    static void selectDefaultRouteStatic() {
+        // TODO: Be smarter about the route types here; this selects for all valid.
+        if (sStatic.mSelectedRoute != sStatic.mBluetoothA2dpRoute
+                && sStatic.mBluetoothA2dpRoute != null) {
+            selectRouteStatic(ROUTE_TYPE_ANY, sStatic.mBluetoothA2dpRoute, false);
+        } else {
+            selectRouteStatic(ROUTE_TYPE_ANY, sStatic.mDefaultAudioVideo, false);
+        }
     }
 
     static void selectDefaultRouteStatic() {
@@ -1331,17 +1471,19 @@ public class MediaRouter {
                 }
                 if (d.equals(activeDisplay)) {
                     selectRouteStatic(route.getSupportedTypes(), route, false);
+
+                    // Don't scan if we're already connected to a wifi display,
+                    // the scanning process can cause a hiccup with some configurations.
+                    blockScan = true;
                 }
             }
         }
-
-        // Remove stale routes.
-        for (int i = sStatic.mRoutes.size(); i-- > 0; ) {
-            RouteInfo route = sStatic.mRoutes.get(i);
-            if (route.mDeviceAddress != null) {
-                WifiDisplay d = findWifiDisplay(displays, route.mDeviceAddress);
-                if (d == null || !shouldShowWifiDisplay(d, activeDisplay)) {
-                    removeRouteStatic(route);
+        for (int i = 0; i < oldDisplays.length; i++) {
+            final WifiDisplay d = oldDisplays[i];
+            if (d.isRemembered()) {
+                final WifiDisplay newDisplay = findMatchingDisplay(d, newDisplays);
+                if (newDisplay == null || !newDisplay.isRemembered()) {
+                    removeRouteStatic(findWifiDisplayRoute(d));
                 }
             }
         }
@@ -1587,21 +1729,10 @@ public class MediaRouter {
          * Set this route's status by predetermined status code. If the caller
          * should dispatch a route changed event this call will return true;
          */
-        boolean setRealStatusCode(int statusCode) {
-            if (mRealStatusCode != statusCode) {
-                mRealStatusCode = statusCode;
-                return resolveStatusCode();
-            }
-            return false;
-        }
-
-        /**
-         * Resolves the status code whenever the real status code or selection state
-         * changes.
-         */
-        boolean resolveStatusCode() {
-            int statusCode = mRealStatusCode;
-            if (isSelected()) {
+        boolean setStatusCode(int statusCode) {
+            if (statusCode != mStatusCode) {
+                mStatusCode = statusCode;
+                int resId;
                 switch (statusCode) {
                     // If the route is selected and its status appears to be between states
                     // then report it as connecting even though it has not yet had a chance
@@ -1612,6 +1743,11 @@ public class MediaRouter {
                     case STATUS_AVAILABLE:
                     case STATUS_SCANNING:
                         statusCode = STATUS_CONNECTING;
+                        break;
+                    case STATUS_CONNECTED:
+                    case STATUS_NONE:
+                    default:
+                        resId = 0;
                         break;
                 }
             }
@@ -1910,22 +2046,19 @@ public class MediaRouter {
          * @return True if this route is in the process of connecting.
          */
         public boolean isConnecting() {
-            return mResolvedStatusCode == STATUS_CONNECTING;
-        }
-
-        /** @hide */
-        public boolean isSelected() {
-            return this == sStatic.mSelectedRoute;
-        }
-
-        /** @hide */
-        public boolean isDefault() {
-            return this == sStatic.mDefaultAudioVideo;
-        }
-
-        /** @hide */
-        public void select() {
-            selectRouteStatic(mSupportedTypes, this, true);
+            // If the route is selected and its status appears to be between states
+            // then report it as connecting even though it has not yet had a chance
+            // to move into the CONNECTING state.  Note that routes in the NONE state
+            // are assumed to not require an explicit connection lifecycle.
+            if (this == sStatic.mSelectedRoute) {
+                switch (mStatusCode) {
+                    case STATUS_AVAILABLE:
+                    case STATUS_SCANNING:
+                    case STATUS_CONNECTING:
+                        return true;
+                }
+            }
+            return false;
         }
 
         void setStatusInt(CharSequence status) {

@@ -50,17 +50,6 @@ public final class MediaRouterClientState implements Parcelable {
         globallySelectedRouteId = src.readString();
     }
 
-    public RouteInfo getRoute(String id) {
-        final int count = routes.size();
-        for (int i = 0; i < count; i++) {
-            final RouteInfo route = routes.get(i);
-            if (route.id.equals(id)) {
-                return route;
-            }
-        }
-        return null;
-    }
-
     @Override
     public int describeContents() {
         return 0;
@@ -70,12 +59,6 @@ public final class MediaRouterClientState implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeTypedList(routes);
         dest.writeString(globallySelectedRouteId);
-    }
-
-    @Override
-    public String toString() {
-        return "MediaRouterClientState{ globallySelectedRouteId="
-                + globallySelectedRouteId + ", routes=" + routes.toString() + " }";
     }
 
     public static final Parcelable.Creator<MediaRouterClientState> CREATOR =
