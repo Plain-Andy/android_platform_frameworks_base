@@ -1262,7 +1262,6 @@ public class KeyguardViewMediator {
             mKeyguardDonePending = false;
             updateActivityLockScreenState();
             adjustStatusBarLocked();
-            mKeyguardDisplayManager.hide();
         }
     }
 
