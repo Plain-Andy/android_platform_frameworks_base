@@ -297,10 +297,6 @@ public class CameraDevice implements android.hardware.camera2.CameraDevice {
             }
 
             if (repeating) {
-                // Queue for deletion after in-flight requests finish
-                if (mRepeatingRequestId != REQUEST_ID_NONE) {
-                    mRepeatingRequestIdDeletedList.add(mRepeatingRequestId);
-                }
                 mRepeatingRequestId = requestId;
             }
 
