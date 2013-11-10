@@ -4099,11 +4099,8 @@
     <!-- Content description of a MediaRouteButton for accessibility support -->
     <string name="media_route_button_content_description">Media output</string>
 
-    <!-- Title of the media route chooser dialog. [CHAR LIMIT=40] -->
+    <!-- Title of the media route chooser dialog. [CHAR LIMIT=30] -->
     <string name="media_route_chooser_title">Connect to device</string>
-
-    <!-- Title of the media route chooser dialog for selecting remote display routes. [CHAR LIMIT=40] -->
-    <string name="media_route_chooser_title_for_remote_display">Cast screen to device</string>
 
     <!-- Placeholder text to show when no devices have been found. [CHAR LIMIT=50] -->
     <string name="media_route_chooser_searching">Searching for devices\u2026</string>

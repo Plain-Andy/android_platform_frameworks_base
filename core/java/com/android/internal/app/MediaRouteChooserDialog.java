@@ -35,6 +35,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * This class implements the route chooser dialog for {@link MediaRouter}.
@@ -105,8 +106,8 @@ public class MediaRouteChooserDialog extends Dialog {
     /**
      * Returns true if the route should be included in the list.
      * <p>
-     * The default implementation returns true for enabled non-default routes that
-     * match the route types.  Subclasses can override this method to filter routes
+     * The default implementation returns true for non-default routes that
+     * match the selector.  Subclasses can override this method to filter routes
      * differently.
      * </p>
      *
@@ -114,7 +115,7 @@ public class MediaRouteChooserDialog extends Dialog {
      * @return True if the route should be included in the chooser dialog.
      */
     public boolean onFilterRoute(MediaRouter.RouteInfo route) {
-        return !route.isDefault() && route.isEnabled() && route.matchesTypes(mRouteTypes);
+        return !route.isDefault() && route.matchesTypes(mRouteTypes);
     }
 
     @Override
@@ -124,9 +125,7 @@ public class MediaRouteChooserDialog extends Dialog {
         getWindow().requestFeature(Window.FEATURE_LEFT_ICON);
 
         setContentView(R.layout.media_route_chooser_dialog);
-        setTitle(mRouteTypes == MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY
-                ? R.string.media_route_chooser_title_for_remote_display
-                : R.string.media_route_chooser_title);
+        setTitle(R.string.media_route_chooser_title);
 
         // Must be called after setContentView.
         getWindow().setFeatureDrawableResource(Window.FEATURE_LEFT_ICON,

@@ -155,18 +155,17 @@ public class MediaRouteButton extends View {
             return false;
         }
 
-        if (mToggleMode) {
-            if (mRemoteActive) {
-                mRouter.selectRouteInt(mRouteTypes, mRouter.getDefaultRoute(), true);
-            } else {
-                final int N = mRouter.getRouteCount();
-                for (int i = 0; i < N; i++) {
-                    final RouteInfo route = mRouter.getRouteAt(i);
-                    if ((route.getSupportedTypes() & mRouteTypes) != 0 &&
-                            route != mRouter.getDefaultRoute()) {
-                        mRouter.selectRouteInt(mRouteTypes, route, true);
-                    }
-                }
+        DialogFragment f = MediaRouteDialogPresenter.showDialogFragment(getActivity(),
+                mRouteTypes, mExtendedSettingsClickListener);
+        return f != null;
+    }
+
+    private Activity getActivity() {
+        // Gross way of unwrapping the Activity so we can get the FragmentManager
+        Context context = getContext();
+        while (context instanceof ContextWrapper) {
+            if (context instanceof Activity) {
+                return (Activity)context;
             }
             context = ((ContextWrapper)context).getBaseContext();
         }
@@ -230,83 +229,6 @@ public class MediaRouteButton extends View {
         cheatSheet.show();
         performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         return true;
-    }
-
-    public void setRouteTypes(int types) {
-        if (types == mRouteTypes) {
-            // Already registered; nothing to do.
-            return;
-        }
-
-        if (mAttachedToWindow && mRouteTypes != 0) {
-            mRouter.removeCallback(mRouterCallback);
-        }
-
-        mRouteTypes = types;
-
-        if (mAttachedToWindow) {
-            updateRouteInfo();
-            mRouter.addCallback(types, mRouterCallback,
-                    MediaRouter.CALLBACK_FLAG_PASSIVE_DISCOVERY);
-        }
-    }
-
-    private void updateRouteInfo() {
-        updateRemoteIndicator();
-        updateRouteCount();
-    }
-
-    public int getRouteTypes() {
-        return mRouteTypes;
-    }
-
-    void updateRemoteIndicator() {
-        final RouteInfo selected = mRouter.getSelectedRoute(mRouteTypes);
-        final boolean isRemote = selected != mRouter.getDefaultRoute();
-        final boolean isConnecting = selected != null && selected.isConnecting();
-
-        boolean needsRefresh = false;
-        if (mRemoteActive != isRemote) {
-            mRemoteActive = isRemote;
-            needsRefresh = true;
-        }
-        if (mIsConnecting != isConnecting) {
-            mIsConnecting = isConnecting;
-            needsRefresh = true;
-        }
-
-        if (needsRefresh) {
-            refreshDrawableState();
-        }
-    }
-
-    void updateRouteCount() {
-        final int N = mRouter.getRouteCount();
-        int count = 0;
-        boolean scanRequired = false;
-        for (int i = 0; i < N; i++) {
-            final RouteInfo route = mRouter.getRouteAt(i);
-            final int routeTypes = route.getSupportedTypes();
-            if ((routeTypes & mRouteTypes) != 0) {
-                if (route instanceof RouteGroup) {
-                    count += ((RouteGroup) route).getRouteCount();
-                } else {
-                    count++;
-                }
-                if (((routeTypes & MediaRouter.ROUTE_TYPE_LIVE_VIDEO
-                        | MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY)) != 0) {
-                    scanRequired = true;
-                }
-            }
-        }
-
-        setEnabled(count != 0);
-
-        // Only allow toggling if we have more than just user routes.
-        // Don't toggle if we support video or remote display routes, we may have to
-        // let the dialog scan.
-        mToggleMode = count == 2 && (mRouteTypes & MediaRouter.ROUTE_TYPE_LIVE_AUDIO) != 0
-                && !scanRequired;
     }
 
     @Override
@@ -380,9 +302,8 @@ public class MediaRouteButton extends View {
 
         mAttachedToWindow = true;
         if (mRouteTypes != 0) {
-            mRouter.addCallback(mRouteTypes, mRouterCallback,
+            mRouter.addCallback(mRouteTypes, mCallback,
                     MediaRouter.CALLBACK_FLAG_PASSIVE_DISCOVERY);
-            updateRouteInfo();
         }
         refreshRoute();
     }

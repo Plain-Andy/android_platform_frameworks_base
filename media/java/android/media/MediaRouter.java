@@ -672,6 +672,19 @@ public class MediaRouter {
      */
     public static final int CALLBACK_FLAG_PASSIVE_DISCOVERY = 1 << 3;
 
+    /**
+     * Flag for {@link #isRouteAvailable}: Ignore the default route.
+     * <p>
+     * This flag is used to determine whether a matching non-default route is available.
+     * This constraint may be used to decide whether to offer the route chooser dialog
+     * to the user.  There is no point offering the chooser if there are no
+     * non-default choices.
+     * </p>
+     *
+     * @hide Future API ported from support library.  Revisit this later.
+     */
+    public static final int AVAILABILITY_FLAG_IGNORE_DEFAULT_ROUTE = 1 << 0;
+
     // Maps application contexts
     static final HashMap<Context, MediaRouter> sRouters = new HashMap<Context, MediaRouter>();
 
@@ -1409,7 +1422,7 @@ public class MediaRouter {
             dispatchRouteChanged(route);
         }
 
-        if ((!enabled || disconnected) && route.isSelected()) {
+        if (!enabled && route.isSelected()) {
             // Oops, no longer available. Reselect the default.
             selectDefaultRouteStatic();
         }
@@ -1892,7 +1905,7 @@ public class MediaRouter {
             // then report it as connecting even though it has not yet had a chance
             // to move into the CONNECTING state.  Note that routes in the NONE state
             // are assumed to not require an explicit connection lifecycle.
-            if (this == sStatic.mSelectedRoute) {
+            if (isSelected()) {
                 switch (mStatusCode) {
                     case STATUS_AVAILABLE:
                     case STATUS_SCANNING:
@@ -1901,6 +1914,21 @@ public class MediaRouter {
                 }
             }
             return false;
+        }
+
+        /** @hide */
+        public boolean isSelected() {
+            return this == sStatic.mSelectedRoute;
+        }
+
+        /** @hide */
+        public boolean isDefault() {
+            return this == sStatic.mDefaultAudioVideo;
+        }
+
+        /** @hide */
+        public void select() {
+            selectRouteStatic(mSupportedTypes, this, true);
         }
 
         void setStatusInt(CharSequence status) {
