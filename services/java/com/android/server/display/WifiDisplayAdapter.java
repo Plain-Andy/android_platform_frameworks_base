@@ -488,36 +488,18 @@ final class WifiDisplayAdapter extends DisplayAdapter {
 
             // Post the notification.
             Resources r = context.getResources();
-            Notification notification;
-            if (state == WifiDisplayStatus.DISPLAY_STATE_CONNECTING) {
-                notification = new Notification.Builder(context)
-                        .setContentTitle(r.getString(
-                                R.string.wifi_display_notification_connecting_title))
-                        .setContentText(r.getString(
-                                R.string.wifi_display_notification_connecting_message,
-                                display.getFriendlyDisplayName()))
-                        .setContentIntent(mSettingsPendingIntent)
-                        .setSmallIcon(R.drawable.ic_notification_cast_connecting)
-                        .setOngoing(true)
-                        .addAction(android.R.drawable.ic_menu_close_clear_cancel,
-                                r.getString(R.string.wifi_display_notification_disconnect),
-                                mDisconnectPendingIntent)
-                        .build();
-            } else {
-                notification = new Notification.Builder(context)
-                        .setContentTitle(r.getString(
-                                R.string.wifi_display_notification_connected_title))
-                        .setContentText(r.getString(
-                                R.string.wifi_display_notification_connected_message,
-                                display.getFriendlyDisplayName()))
-                        .setContentIntent(mSettingsPendingIntent)
-                        .setSmallIcon(R.drawable.ic_notification_cast_on)
-                        .setOngoing(true)
-                        .addAction(android.R.drawable.ic_menu_close_clear_cancel,
-                                r.getString(R.string.wifi_display_notification_disconnect),
-                                mDisconnectPendingIntent)
-                        .build();
-            }
+            Notification notification = new Notification.Builder(context)
+                    .setContentTitle(r.getString(
+                            R.string.wifi_display_notification_title))
+                    .setContentText(r.getString(
+                            R.string.wifi_display_notification_message))
+                    .setContentIntent(mSettingsPendingIntent)
+                    .setSmallIcon(R.drawable.ic_media_route_on_holo_dark)
+                    .setOngoing(true)
+                    .addAction(android.R.drawable.ic_menu_close_clear_cancel,
+                            r.getString(R.string.wifi_display_notification_disconnect),
+                            mDisconnectPendingIntent)
+                    .build();
             mNotificationManager.notifyAsUser(null,
                     R.string.wifi_display_notification_disconnect,
                     notification, UserHandle.ALL);

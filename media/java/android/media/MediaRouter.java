@@ -61,7 +61,7 @@ public class MediaRouter {
 
     static class Static implements DisplayManager.DisplayListener {
         // Time between wifi display scans when actively scanning in milliseconds.
-        private static final int WIFI_DISPLAY_SCAN_INTERVAL = 15000;
+        private static final int WIFI_DISPLAY_SCAN_INTERVAL = 10000;
 
         final Context mAppContext;
         final Resources mResources;
@@ -84,7 +84,6 @@ public class MediaRouter {
 
         RouteInfo mSelectedRoute;
 
-        final boolean mCanConfigureWifiDisplays;
         boolean mActivelyScanningWifiDisplays;
         String mPreviousActiveWifiDisplayAddress;
 
@@ -1287,23 +1286,13 @@ public class MediaRouter {
     }
 
     static void updateWifiDisplayStatus(WifiDisplayStatus status) {
+        boolean wantScan = false;
         WifiDisplay[] displays;
         WifiDisplay activeDisplay;
+
         if (status.getFeatureState() == WifiDisplayStatus.FEATURE_STATE_ON) {
             displays = status.getDisplays();
             activeDisplay = status.getActiveDisplay();
-
-            // Only the system is able to connect to wifi display routes.
-            // The display manager will enforce this with a permission check but it
-            // still publishes information about all available displays.
-            // Filter the list down to just the active display.
-            if (!sStatic.mCanConfigureWifiDisplays) {
-                if (activeDisplay != null) {
-                    displays = new WifiDisplay[] { activeDisplay };
-                } else {
-                    displays = WifiDisplay.EMPTY_ARRAY;
-                }
-            }
         } else {
             displays = WifiDisplay.EMPTY_ARRAY;
             activeDisplay = null;
@@ -1320,33 +1309,30 @@ public class MediaRouter {
                     route = makeWifiDisplayRoute(d, status);
                     addRouteStatic(route);
                 } else {
-                    String address = d.getDeviceAddress();
-                    boolean disconnected = !address.equals(activeDisplayAddress)
-                            && address.equals(sStatic.mPreviousActiveWifiDisplayAddress);
-                    updateWifiDisplayRoute(route, d, status, disconnected);
+                    updateWifiDisplayRoute(route, d, status);
                 }
                 if (d.equals(activeDisplay)) {
                     selectRouteStatic(route.getSupportedTypes(), route, false);
-
-                    // Don't scan if we're already connected to a wifi display,
-                    // the scanning process can cause a hiccup with some configurations.
-                    blockScan = true;
-                }
-            }
-        }
-        for (int i = 0; i < oldDisplays.length; i++) {
-            final WifiDisplay d = oldDisplays[i];
-            if (d.isRemembered()) {
-                final WifiDisplay newDisplay = findMatchingDisplay(d, newDisplays);
-                if (newDisplay == null || !newDisplay.isRemembered()) {
-                    removeRouteStatic(findWifiDisplayRoute(d));
                 }
             }
         }
 
-        // Remember the current active wifi display address so that we can infer disconnections.
-        // TODO: This hack will go away once all of this is moved into the media router service.
-        sStatic.mPreviousActiveWifiDisplayAddress = activeDisplayAddress;
+        // Remove stale routes.
+        for (int i = sStatic.mRoutes.size(); i-- > 0; ) {
+            RouteInfo route = sStatic.mRoutes.get(i);
+            if (route.mDeviceAddress != null) {
+                WifiDisplay d = findWifiDisplay(displays, route.mDeviceAddress);
+                if (d == null || !shouldShowWifiDisplay(d, activeDisplay)) {
+                    removeRouteStatic(route);
+                }
+            }
+        }
+
+        // Don't scan if we're already connected to a wifi display,
+        // the scanning process can cause a hiccup with some configurations.
+        if (wantScan && activeDisplay != null) {
+            sStatic.mDisplayService.scanWifiDisplays();
+        }
     }
 
     private static boolean shouldShowWifiDisplay(WifiDisplay d, WifiDisplay activeDisplay) {
@@ -1879,6 +1865,11 @@ public class MediaRouter {
                 }
             }
             return null;
+        }
+
+        /** @hide */
+        public String getDeviceAddress() {
+            return mDeviceAddress;
         }
 
         /**
