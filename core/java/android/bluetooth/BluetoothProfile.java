@@ -122,9 +122,22 @@ public interface BluetoothProfile {
     public static final int HEADSET_CLIENT = 16;
 
     /**
+     * HID device
+     * @hide
+     */
+    static public final int HID_DEVICE = 17;
+
+    /**
+     * SAP
+     * @hide
+     */
+    public static final int SAP = 20;
+
+    /**
      * DUN
      * @hide
      */
+
     public static final int DUN = 21;
 
     /**
