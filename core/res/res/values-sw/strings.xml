@@ -382,8 +382,10 @@
     <string name="permdesc_bindVpnService" msgid="2067845564581693905">"Inaruhusu kishikiliaji kushurutisha kusano ya kiwango cha juu cha huduma ya Vpn. Haipaswi kuhitajika kwa programu za kawaida."</string>
     <string name="permlab_bindWallpaper" msgid="8716400279937856462">"funga kwa mandhari"</string>
     <string name="permdesc_bindWallpaper" msgid="7108428692595491668">"Inaruhusu kishikiliaji kushurutisha kwa kusano ya kiwango cha juu cha mandhari. Haipaswi kamwe kuhitajika kwa programu za kawaida."</string>
-    <string name="permlab_bindRemoteDisplay" msgid="1782923938029941960">"fungisha kwenye mwonekano wa mbali"</string>
-    <string name="permdesc_bindRemoteDisplay" msgid="1261242718727295981">"Huruhusu mtumiaji kujifungia kiolesura cha kiwango cha juu cha mwonekano wa mbali. Haipaswi kuhitajika kwa programu za kawaida."</string>
+    <!-- no translation found for permlab_bindRemoteDisplay (1782923938029941960) -->
+    <skip />
+    <!-- no translation found for permdesc_bindRemoteDisplay (1261242718727295981) -->
+    <skip />
     <string name="permlab_bindRemoteViews" msgid="5697987759897367099">"funga kwenye huduma ya widget"</string>
     <string name="permdesc_bindRemoteViews" msgid="4717987810137692572">"Inaruhusu mmiliki kushurutisha kusano ya kiwango cha juu ya huduma ya wijeti. Haipaswi kuhitajika kwa programu za kawaida."</string>
     <string name="permlab_bindDeviceAdmin" msgid="8704986163711455010">"jiunge na msimamizi wa kifaa"</string>
@@ -1492,11 +1494,14 @@
     <string name="bluetooth_a2dp_audio_route_name" msgid="8575624030406771015">"Sauti ya Bluetooth"</string>
     <string name="wireless_display_route_description" msgid="9070346425023979651">"Uonyeshaji usiotumia waya"</string>
     <string name="media_route_button_content_description" msgid="5758553567065145276">"Towe la midia"</string>
-    <string name="media_route_chooser_title" msgid="1751618554539087622">"Unganisha kwenye kifaa"</string>
-    <string name="media_route_chooser_title_for_remote_display" msgid="3395541745872017583">"Tuma skrini kwa kifaa"</string>
-    <string name="media_route_chooser_searching" msgid="4776236202610828706">"Inatafuta vifaa..."</string>
-    <string name="media_route_chooser_extended_settings" msgid="87015534236701604">"Mipangilio"</string>
-    <string name="media_route_controller_disconnect" msgid="8966120286374158649">"Ondoa"</string>
+    <!-- no translation found for media_route_chooser_title (1751618554539087622) -->
+    <skip />
+    <!-- no translation found for media_route_chooser_searching (4776236202610828706) -->
+    <skip />
+    <!-- no translation found for media_route_chooser_extended_settings (87015534236701604) -->
+    <skip />
+    <!-- no translation found for media_route_controller_disconnect (8966120286374158649) -->
+    <skip />
     <string name="media_route_status_scanning" msgid="7279908761758293783">"Inatambaza..."</string>
     <string name="media_route_status_connecting" msgid="6422571716007825440">"Inaunganisha..."</string>
     <string name="media_route_status_available" msgid="6983258067194649391">"Inapatikana"</string>

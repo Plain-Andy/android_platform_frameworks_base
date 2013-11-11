@@ -1492,11 +1492,14 @@
     <string name="bluetooth_a2dp_audio_route_name" msgid="8575624030406771015">"Umsindo we-Bluetooth"</string>
     <string name="wireless_display_route_description" msgid="9070346425023979651">"Ukubonisa okungenazintambo"</string>
     <string name="media_route_button_content_description" msgid="5758553567065145276">"Okukhiphayo kwemidiya"</string>
-    <string name="media_route_chooser_title" msgid="1751618554539087622">"Xhuma kudivayisi"</string>
-    <string name="media_route_chooser_title_for_remote_display" msgid="3395541745872017583">"Lingisa isikrini kudivayisi"</string>
-    <string name="media_route_chooser_searching" msgid="4776236202610828706">"Isesha amadivayisi…"</string>
-    <string name="media_route_chooser_extended_settings" msgid="87015534236701604">"Izilungiselelo"</string>
-    <string name="media_route_controller_disconnect" msgid="8966120286374158649">"Nqamula"</string>
+    <!-- no translation found for media_route_chooser_title (1751618554539087622) -->
+    <skip />
+    <!-- no translation found for media_route_chooser_searching (4776236202610828706) -->
+    <skip />
+    <!-- no translation found for media_route_chooser_extended_settings (87015534236701604) -->
+    <skip />
+    <!-- no translation found for media_route_controller_disconnect (8966120286374158649) -->
+    <skip />
     <string name="media_route_status_scanning" msgid="7279908761758293783">"Iyaskena..."</string>
     <string name="media_route_status_connecting" msgid="6422571716007825440">"Iyaxhuma..."</string>
     <string name="media_route_status_available" msgid="6983258067194649391">"Kuyatholakala"</string>
