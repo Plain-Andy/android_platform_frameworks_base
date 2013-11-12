@@ -476,7 +476,7 @@ public class MediaRouter {
             route.mDescription = globalRoute.description;
             route.mSupportedTypes = globalRoute.supportedTypes;
             route.mEnabled = globalRoute.enabled;
-            route.setStatusCode(globalRoute.statusCode);
+            route.setRealStatusCode(globalRoute.statusCode);
             route.mPlaybackType = globalRoute.playbackType;
             route.mPlaybackStream = globalRoute.playbackStream;
             route.mVolume = globalRoute.volume;
@@ -508,8 +508,8 @@ public class MediaRouter {
                 route.mEnabled = globalRoute.enabled;
                 changed = true;
             }
-            if (route.mStatusCode != globalRoute.statusCode) {
-                route.setStatusCode(globalRoute.statusCode);
+            if (route.mRealStatusCode != globalRoute.statusCode) {
+                route.setRealStatusCode(globalRoute.statusCode);
                 changed = true;
             }
             if (route.mPlaybackType != globalRoute.playbackType) {
@@ -1584,10 +1584,21 @@ public class MediaRouter {
          * Set this route's status by predetermined status code. If the caller
          * should dispatch a route changed event this call will return true;
          */
-        boolean setStatusCode(int statusCode) {
-            if (statusCode != mStatusCode) {
-                mStatusCode = statusCode;
-                int resId;
+        boolean setRealStatusCode(int statusCode) {
+            if (mRealStatusCode != statusCode) {
+                mRealStatusCode = statusCode;
+                return resolveStatusCode();
+            }
+            return false;
+        }
+
+        /**
+         * Resolves the status code whenever the real status code or selection state
+         * changes.
+         */
+        boolean resolveStatusCode() {
+            int statusCode = mRealStatusCode;
+            if (isSelected()) {
                 switch (statusCode) {
                     // If the route is selected and its status appears to be between states
                     // then report it as connecting even though it has not yet had a chance
@@ -1598,11 +1609,6 @@ public class MediaRouter {
                     case STATUS_AVAILABLE:
                     case STATUS_SCANNING:
                         statusCode = STATUS_CONNECTING;
-                        break;
-                    case STATUS_CONNECTED:
-                    case STATUS_NONE:
-                    default:
-                        resId = 0;
                         break;
                 }
             }
@@ -1901,19 +1907,7 @@ public class MediaRouter {
          * @return True if this route is in the process of connecting.
          */
         public boolean isConnecting() {
-            // If the route is selected and its status appears to be between states
-            // then report it as connecting even though it has not yet had a chance
-            // to move into the CONNECTING state.  Note that routes in the NONE state
-            // are assumed to not require an explicit connection lifecycle.
-            if (isSelected()) {
-                switch (mStatusCode) {
-                    case STATUS_AVAILABLE:
-                    case STATUS_SCANNING:
-                    case STATUS_CONNECTING:
-                        return true;
-                }
-            }
-            return false;
+            return mResolvedStatusCode == STATUS_CONNECTING;
         }
 
         /** @hide */
