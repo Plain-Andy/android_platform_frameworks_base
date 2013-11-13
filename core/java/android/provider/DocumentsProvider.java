@@ -253,7 +253,8 @@ public abstract class DocumentsProvider extends ContentProvider {
      * {@link DocumentsContract#EXTRA_LOADING} on the Cursor to indicate that
      * you are still fetching additional data. Then, when the network data is
      * available, you can send a change notification to trigger a requery and
-     * return the complete contents.
+     * return the complete contents. To return a Cursor with extras, you need to
+     * extend and override {@link Cursor#getExtras()}.
      * <p>
      * To support change notifications, you must
      * {@link Cursor#setNotificationUri(ContentResolver, Uri)} with a relevant
