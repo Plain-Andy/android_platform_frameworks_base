@@ -509,8 +509,7 @@ public class KeyguardViewMediator {
         mLockPatternUtils.setCurrentUser(UserHandle.USER_OWNER);
 
         // Assume keyguard is showing (unless it's disabled) until we know for sure...
-        mShowing = (mUpdateMonitor.isDeviceProvisioned() || mLockPatternUtils.isSecure())
-                && !mLockPatternUtils.isLockScreenDisabled();
+        mShowing = !mLockPatternUtils.isLockScreenDisabled();
 
         WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
 
