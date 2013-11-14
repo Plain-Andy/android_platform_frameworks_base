@@ -3567,13 +3567,13 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                     padding = a.getDimensionPixelSize(attr, -1);
                     mUserPaddingLeftInitial = padding;
                     mUserPaddingRightInitial = padding;
-                    mLeftPaddingDefined = true;
-                    mRightPaddingDefined = true;
+                    leftPaddingDefined = true;
+                    rightPaddingDefined = true;
                     break;
                  case com.android.internal.R.styleable.View_paddingLeft:
                     leftPadding = a.getDimensionPixelSize(attr, -1);
                     mUserPaddingLeftInitial = leftPadding;
-                    mLeftPaddingDefined = true;
+                    leftPaddingDefined = true;
                     break;
                 case com.android.internal.R.styleable.View_paddingTop:
                     topPadding = a.getDimensionPixelSize(attr, -1);
@@ -3581,7 +3581,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 case com.android.internal.R.styleable.View_paddingRight:
                     rightPadding = a.getDimensionPixelSize(attr, -1);
                     mUserPaddingRightInitial = rightPadding;
-                    mRightPaddingDefined = true;
+                    rightPaddingDefined = true;
                     break;
                 case com.android.internal.R.styleable.View_paddingBottom:
                     bottomPadding = a.getDimensionPixelSize(attr, -1);
@@ -15378,6 +15378,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         mUserPaddingRightInitial = padding.right;
                         internalSetPadding(padding.left, padding.top, padding.right, padding.bottom);
                 }
+                mLeftPaddingDefined = false;
+                mRightPaddingDefined = false;
             }
 
             // Compare the minimum sizes of the old Drawable and the new.  If there isn't an old or
@@ -15473,6 +15475,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         mUserPaddingLeftInitial = left;
         mUserPaddingRightInitial = right;
+
+        mLeftPaddingDefined = true;
+        mRightPaddingDefined = true;
 
         internalSetPadding(left, top, right, bottom);
     }
