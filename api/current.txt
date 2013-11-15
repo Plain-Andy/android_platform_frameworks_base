@@ -3178,8 +3178,13 @@ package android.app {
     method public int checkOpNoThrow(java.lang.String, int, java.lang.String);
     method public void checkPackage(int, java.lang.String);
     method public void finishOp(java.lang.String, int, java.lang.String);
+    method public static int getPrivacyGuardIconResId(int);
+    method public static int getPrivacyGuardOp(java.lang.String);
+    method public java.util.List<java.lang.Integer> getPrivacyGuardOpsForPackage(java.lang.String);
+    method public int getPrivacyGuardSettingForPackage(int, java.lang.String);
     method public int noteOp(java.lang.String, int, java.lang.String);
     method public int noteOpNoThrow(java.lang.String, int, java.lang.String);
+    method public void setPrivacyGuardSettingForPackage(int, java.lang.String, boolean, boolean);
     method public int startOp(java.lang.String, int, java.lang.String);
     method public int startOpNoThrow(java.lang.String, int, java.lang.String);
     method public void startWatchingMode(java.lang.String, java.lang.String, android.app.AppOpsManager.OnOpChangedListener);
@@ -3191,6 +3196,12 @@ package android.app {
     field public static final java.lang.String OPSTR_FINE_LOCATION = "android:fine_location";
     field public static final java.lang.String OPSTR_MONITOR_HIGH_POWER_LOCATION = "android:monitor_location_high_power";
     field public static final java.lang.String OPSTR_MONITOR_LOCATION = "android:monitor_location";
+    field public static final int PRIVACY_GUARD_CUSTOM = 4; // 0x4
+    field public static final int PRIVACY_GUARD_CUSTOM_PLUS = 5; // 0x5
+    field public static final int PRIVACY_GUARD_DISABLED = 0; // 0x0
+    field public static final int PRIVACY_GUARD_DISABLED_PLUS = 1; // 0x1
+    field public static final int PRIVACY_GUARD_ENABLED = 2; // 0x2
+    field public static final int PRIVACY_GUARD_ENABLED_PLUS = 3; // 0x3
   }
 
   public static abstract interface AppOpsManager.OnOpChangedListener {
@@ -21085,6 +21096,7 @@ package android.provider {
     field public static final java.lang.String RADIO_CELL = "cell";
     field public static final java.lang.String RADIO_NFC = "nfc";
     field public static final java.lang.String RADIO_WIFI = "wifi";
+    field public static final java.lang.String SHOW_CPU = "show_cpu";
     field public static final java.lang.String SHOW_PROCESSES = "show_processes";
     field public static final java.lang.String STAY_ON_WHILE_PLUGGED_IN = "stay_on_while_plugged_in";
     field public static final java.lang.String SYS_PROP_SETTING_VERSION = "sys.settings_global_version";
