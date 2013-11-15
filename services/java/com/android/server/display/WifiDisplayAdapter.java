@@ -172,21 +172,6 @@ final class WifiDisplayAdapter extends DisplayAdapter {
         });
     }
 
-    public void requestStopScanLocked() {
-        if (DEBUG) {
-            Slog.d(TAG, "requestStopScanLocked");
-        }
-
-        getHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                if (mDisplayController != null) {
-                    mDisplayController.requestStopScan();
-                }
-            }
-        });
-    }
-
     public void requestConnectLocked(final String address) {
         if (DEBUG) {
             Slog.d(TAG, "requestConnectLocked: address=" + address);

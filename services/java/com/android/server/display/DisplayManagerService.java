@@ -470,11 +470,10 @@ public final class DisplayManagerService extends IDisplayManager.Stub {
     }
 
     @Override // Binder call
-    public void startWifiDisplayScan() {
+    public void scanWifiDisplays() {
         mContext.enforceCallingOrSelfPermission(Manifest.permission.CONFIGURE_WIFI_DISPLAY,
-                "Permission required to start wifi display scans");
+                "Permission required to scan wifi displays");
 
-        final int callingPid = Binder.getCallingPid();
         final long token = Binder.clearCallingIdentity();
         try {
             synchronized (mSyncRoot) {
