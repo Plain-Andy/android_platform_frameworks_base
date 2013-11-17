@@ -10,4 +10,5 @@
     <!-- Description of an application permission that lets lets an application access the ThemeManagerService -->
     <string name="permdesc_accessThemeService">Allows an application to set/reset themes. Not for use by normal applications.</string>
 
+    <string name="app_killed_message">App killed</string>
 </resources> 
