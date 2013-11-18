@@ -3439,7 +3439,8 @@ public class WindowManagerService extends IWindowManager.Stub
             atoken.appFullscreen = fullscreen;
             atoken.showWhenLocked = showWhenLocked;
             atoken.requestedOrientation = requestedOrientation;
-            atoken.configChanges = configChanges;
+            atoken.layoutConfigChanges = (configChanges &
+                    (ActivityInfo.CONFIG_SCREEN_SIZE | ActivityInfo.CONFIG_ORIENTATION)) != 0;
             if (DEBUG_TOKEN_MOVEMENT || DEBUG_ADD_REMOVE) Slog.v(TAG, "addAppToken: " + atoken
                     + " to stack=" + stackId + " task=" + taskId + " at " + addPos);
 
@@ -8275,10 +8276,9 @@ public class WindowManagerService extends IWindowManager.Stub
             // windows, since that means "perform layout as normal,
             // just don't display").
             if (!gone || !win.mHaveFrame || win.mLayoutNeeded
-                    || win.isConfigChanged() && (win.mAttrs.type == TYPE_KEYGUARD ||
-                            (win.mAppToken != null && (win.mAppToken.configChanges &
-                            (ActivityInfo.CONFIG_SCREEN_SIZE | ActivityInfo.CONFIG_ORIENTATION))
-                                    != 0))
+                    || ((win.isConfigChanged() || win.setInsetsChanged()) &&
+                            (win.mAttrs.type == TYPE_KEYGUARD ||
+                            win.mAppToken != null && win.mAppToken.layoutConfigChanges))
                     || win.mAttrs.type == TYPE_UNIVERSE_BACKGROUND) {
                 if (!win.mLayoutAttached) {
                     if (initial) {
