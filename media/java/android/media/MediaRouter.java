@@ -1355,12 +1355,6 @@ public class MediaRouter {
                 }
             }
         }
-
-        // Don't scan if we're already connected to a wifi display,
-        // the scanning process can cause a hiccup with some configurations.
-        if (wantScan && activeDisplay != null && sStatic.mCanConfigureWifiDisplays) {
-            sStatic.mDisplayService.scanWifiDisplays();
-        }
     }
 
     private static boolean shouldShowWifiDisplay(WifiDisplay d, WifiDisplay activeDisplay) {
