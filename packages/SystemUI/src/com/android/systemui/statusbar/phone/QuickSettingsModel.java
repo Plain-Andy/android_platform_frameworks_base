@@ -309,6 +309,18 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private RefreshCallback mSslCaCertWarningCallback;
     private State mSslCaCertWarningState = new State();
 
+    private QuickSettingsTileView mPowerMenuTile;
+    private RefreshCallback mPowerMenuCallback;
+    private State mPowerMenuState = new State();
+
+    private QuickSettingsTileView mTorchTile;
+    private RefreshCallback mTorchCallback;
+    private State mTorchState = new State();
+
+    private QuickSettingsTileView mScreenOffTile;
+    private RefreshCallback mScreenOffCallback;
+    private State mScreenOffState = new State();
+
     private RotationLockController mRotationLockController;
 
     public QuickSettingsModel(Context context) {
@@ -355,6 +367,9 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         refreshRotationLockTile();
         refreshRssiTile();
         refreshLocationTile();
+        refreshPowerMenuTile();
+        refreshTorchTile();
+        refreshScreenOffTile();
     }
 
     // Settings
@@ -937,5 +952,47 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         }
         mSslCaCertWarningState.label = r.getString(R.string.ssl_ca_cert_warning);
         mSslCaCertWarningCallback.refreshView(mSslCaCertWarningTile, mSslCaCertWarningState);
+    }
+
+    // Power Menu
+    void addPowerMenuTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mPowerMenuTile = view;
+        mPowerMenuCallback = cb;
+        refreshPowerMenuTile();
+    }
+    void refreshPowerMenuTile() {
+        Resources r = mContext.getResources();
+        mPowerMenuState.label = r.getString(R.string.quick_settings_power_menu_label);
+        mPowerMenuCallback.refreshView(mPowerMenuTile, mPowerMenuState);
+    }
+
+    // Torch
+    // show torch tile only on device with flash
+    boolean deviceSupportsLed() {
+        PackageManager pm = mContext.getPackageManager();
+        return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+    }
+
+    void addTorchTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mTorchTile = view;
+        mTorchCallback = cb;
+        refreshTorchTile();
+    }
+    void refreshTorchTile() {
+        Resources r = mContext.getResources();
+        mTorchState.label = r.getString(R.string.quick_settings_torch_label);
+        mTorchCallback.refreshView(mTorchTile, mTorchState);
+    }
+
+    // Screen Off
+    void addScreenOffTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mScreenOffTile = view;
+        mScreenOffCallback = cb;
+        refreshScreenOffTile();
+    }
+    void refreshScreenOffTile() {
+        Resources r = mContext.getResources();
+        mScreenOffState.label = r.getString(R.string.quick_settings_screen_off_label);
+        mScreenOffCallback.refreshView(mScreenOffTile, mScreenOffState);
     }
 }
