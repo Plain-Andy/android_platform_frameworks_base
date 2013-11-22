@@ -61,9 +61,6 @@ public class MediaRouter {
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     static class Static implements DisplayManager.DisplayListener {
-        // Time between wifi display scans when actively scanning in milliseconds.
-        private static final int WIFI_DISPLAY_SCAN_INTERVAL = 10000;
-
         final Context mAppContext;
         final Resources mResources;
         final IAudioService mAudioService;
@@ -88,13 +85,6 @@ public class MediaRouter {
         final boolean mCanConfigureWifiDisplays;
         boolean mActivelyScanningWifiDisplays;
         String mPreviousActiveWifiDisplayAddress;
-
-        int mDiscoveryRequestRouteTypes;
-        boolean mDiscoverRequestActiveScan;
-
-        int mCurrentUserId = -1;
-        IMediaRouterClient mClient;
-        MediaRouterClientState mClientState;
 
         int mDiscoveryRequestRouteTypes;
         boolean mDiscoverRequestActiveScan;
@@ -277,15 +267,24 @@ public class MediaRouter {
             }
 
             // Update wifi display scanning.
-            if (activeScanWifiDisplay && mCanConfigureWifiDisplays) {
-                if (!mActivelyScanningWifiDisplays) {
-                    mActivelyScanningWifiDisplays = true;
-                    mHandler.post(mScanWifiDisplays);
+            // TODO: All of this should be managed by the media router service.
+            if (mCanConfigureWifiDisplays) {
+                if (mSelectedRoute != null
+                        && mSelectedRoute.matchesTypes(ROUTE_TYPE_REMOTE_DISPLAY)) {
+                    // Don't scan while already connected to a remote display since
+                    // it may interfere with the ongoing transmission.
+                    activeScanWifiDisplay = false;
                 }
-            } else {
-                if (mActivelyScanningWifiDisplays) {
-                    mActivelyScanningWifiDisplays = false;
-                    mHandler.removeCallbacks(mScanWifiDisplays);
+                if (activeScanWifiDisplay) {
+                    if (!mActivelyScanningWifiDisplays) {
+                        mActivelyScanningWifiDisplays = true;
+                        mDisplayService.startWifiDisplayScan();
+                    }
+                } else {
+                    if (mActivelyScanningWifiDisplays) {
+                        mActivelyScanningWifiDisplays = false;
+                        mDisplayService.stopWifiDisplayScan();
+                    }
                 }
             }
 
@@ -958,16 +957,6 @@ public class MediaRouter {
         }
     }
 
-    static void selectDefaultRouteStatic() {
-        // TODO: Be smarter about the route types here; this selects for all valid.
-        if (sStatic.mSelectedRoute != sStatic.mBluetoothA2dpRoute
-                && sStatic.mBluetoothA2dpRoute != null) {
-            selectRouteStatic(ROUTE_TYPE_ANY, sStatic.mBluetoothA2dpRoute, false);
-        } else {
-            selectRouteStatic(ROUTE_TYPE_ANY, sStatic.mDefaultAudioVideo, false);
-        }
-    }
-
     /**
      * Compare the device address of a display and a route.
      * Nulls/no device address will match another null/no address.
@@ -1302,10 +1291,8 @@ public class MediaRouter {
     }
 
     static void updateWifiDisplayStatus(WifiDisplayStatus status) {
-        boolean wantScan = false;
         WifiDisplay[] displays;
         WifiDisplay activeDisplay;
-
         if (status.getFeatureState() == WifiDisplayStatus.FEATURE_STATE_ON) {
             displays = status.getDisplays();
             activeDisplay = status.getActiveDisplay();
@@ -1337,7 +1324,10 @@ public class MediaRouter {
                     route = makeWifiDisplayRoute(d, status);
                     addRouteStatic(route);
                 } else {
-                    updateWifiDisplayRoute(route, d, status);
+                    String address = d.getDeviceAddress();
+                    boolean disconnected = !address.equals(activeDisplayAddress)
+                            && address.equals(sStatic.mPreviousActiveWifiDisplayAddress);
+                    updateWifiDisplayRoute(route, d, status, disconnected);
                 }
                 if (d.equals(activeDisplay)) {
                     selectRouteStatic(route.getSupportedTypes(), route, false);
@@ -1355,6 +1345,10 @@ public class MediaRouter {
                 }
             }
         }
+
+        // Remember the current active wifi display address so that we can infer disconnections.
+        // TODO: This hack will go away once all of this is moved into the media router service.
+        sStatic.mPreviousActiveWifiDisplayAddress = activeDisplayAddress;
     }
 
     private static boolean shouldShowWifiDisplay(WifiDisplay d, WifiDisplay activeDisplay) {
@@ -1431,7 +1425,7 @@ public class MediaRouter {
             dispatchRouteChanged(route);
         }
 
-        if (!enabled && route.isSelected()) {
+        if ((!enabled || disconnected) && route.isSelected()) {
             // Oops, no longer available. Reselect the default.
             selectDefaultRouteStatic();
         }
