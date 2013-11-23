@@ -970,12 +970,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     // show torch tile only on device with flash
     boolean deviceSupportsLed() {
         PackageManager pm = mContext.getPackageManager();
-        try {
-            return pm.getPackageInfo("net.cactii.flash2", 0) != null;
-        } catch (PackageManager.NameNotFoundException e) {
-            // ignored, just catched: return false below
-        }
-        return false;
+        return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
     }
 
     void addTorchTile(QuickSettingsTileView view, RefreshCallback cb) {
