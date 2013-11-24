@@ -218,7 +218,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
     View mNotificationPanelHeader;
     View mDateTimeView;
     View mClearButton;
-    ImageView mSettingsButton, mNotificationButton, mEditModeButton;
+    ImageView mSettingsButton, mNotificationButton;
 
     // carrier/wifi label
     private TextView mCarrierLabel;
@@ -501,7 +501,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
         mHasSettingsPanel = res.getBoolean(R.bool.config_hasSettingsPanel);
         mHasFlipSettings = res.getBoolean(R.bool.config_hasFlipSettingsPanel);
 
-        // Notifications date time
         mDateTimeView = mNotificationPanelHeader.findViewById(R.id.datetime);
 
         mSettingsButton = (ImageView) mStatusBarWindow.findViewById(R.id.settings_button);
@@ -634,14 +633,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
                 }
             }
 
-            // Quicksettings date/time
-            View qsDateTimeView = mSettingsPanel.findViewById(R.id.datetime);
-
-            if (qsDateTimeView != null) {
-                qsDateTimeView.setOnClickListener(mClockClickListener);
-                qsDateTimeView.setEnabled(true);
-            }
-
             // wherever you find it, Quick Settings needs a container to survive
             mSettingsContainer = (QuickSettingsContainerView)
                     mStatusBarWindow.findViewById(R.id.quick_settings_container);
@@ -659,24 +650,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
                 mQS.setBar(mStatusBarView);
                 mQS.setup(mNetworkController, mBluetoothController, mBatteryController,
                         mLocationController, mRotationLockController);
-
-                // edit mode button
-                mEditModeButton = (ImageView) mSettingsPanel.findViewById(R.id.edit_mode_button);
-
-                if (mEditModeButton != null) {
-                    mEditModeButton.setOnClickListener(mEditModeButtonListener);
-                    mEditModeButton.setEnabled(true);
-                }
-
-                // set edit mode changed listener
-                mSettingsContainer.setOnEditModeChangedListener(
-                        new QuickSettingsContainerView.EditModeChangedListener() {
-                    @Override
-                    public void onEditModeChanged(final boolean enabled) {
-                        mEditModeButton.setImageResource(enabled ?
-                                R.drawable.ic_notify_edit_save : R.drawable.ic_notify_edit_normal);
-                    }
-                });
             } else {
                 mQS = null; // fly away, be free
             }
@@ -1776,6 +1749,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
         }, FLIP_DURATION - 150);
     }
 
+    public void flipPanels() {
+        if (mHasFlipSettings) {
+            if (mFlipSettingsView.getVisibility() != View.VISIBLE) {
+                flipToSettings();
+            } else {
+                flipToNotifications();
+            }
+        }
+    }
+
     public void animateCollapseQuickSettings() {
         mStatusBarView.collapseAllPanels(true);
     }
@@ -1815,9 +1798,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
 
         mExpandedVisible = false;
         mPile.setLayoutTransitionsEnabled(false);
-        if (mNavigationBarView != null) {
+        if (mNavigationBarView != null)
             mNavigationBarView.setSlippery(false);
-        }
         visibilityChanged(false);
 
         // Shrink the window to the size of the status bar only
@@ -2535,18 +2517,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
         mContext.startActivityAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
         animateCollapsePanels();
     }
-
-    private View.OnClickListener mEditModeButtonListener = new View.OnClickListener() {
-        public void onClick(View v) {
-            final boolean enabled = mSettingsContainer.isEditModeEnabled();
-            mEditModeButton.animate().rotationYBy(180)
-                    .setListener(new AnimatorListenerAdapter() {
-                        public void onAnimationEnd(Animator animation) {
-                            mSettingsContainer.setEditModeEnabled(!enabled);
-                        }
-                });
-        }
-    };
 
     private View.OnClickListener mSettingsButtonListener = new View.OnClickListener() {
         public void onClick(View v) {

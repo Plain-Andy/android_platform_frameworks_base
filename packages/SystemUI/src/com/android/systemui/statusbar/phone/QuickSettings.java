@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
- * This code has been modified. Portions copyright (C) 2013, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,8 +77,6 @@ import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.RotationLockController;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  *
@@ -89,25 +86,7 @@ class QuickSettings {
     private static final String TAG = "QuickSettings";
     public static final boolean SHOW_IME_TILE = false;
 
-    public enum Tile {
-        USER,
-        BRIGHTNESS,
-        SETTINGS,
-        WIFI,
-        RSSI,
-        ROTATION,
-        BATTERY,
-        AIRPLANE,
-        BLUETOOTH,
-        LOCATION
-    }
-
-    public static final String NO_TILES = "NO_TILES";
-    public static final String DELIMITER = ";";
-    public static final String DEFAULT_TILES = Tile.USER + DELIMITER + Tile.BRIGHTNESS
-        + DELIMITER + Tile.SETTINGS + DELIMITER + Tile.WIFI + DELIMITER + Tile.RSSI
-        + DELIMITER + Tile.ROTATION + DELIMITER + Tile.BATTERY + DELIMITER
-        + Tile.BLUETOOTH + DELIMITER + Tile.LOCATION;
+    public static final boolean LONG_PRESS_TOGGLES = true;
 
     private Context mContext;
     private PanelBar mBar;
@@ -129,7 +108,6 @@ class QuickSettings {
 
     boolean mTilesSetUp = false;
     boolean mUseDefaultAvatar = false;
-    boolean mEditModeEnabled = false;
 
     private Handler mHandler;
 
@@ -288,7 +266,8 @@ class QuickSettings {
         // Setup the tiles that we are going to be showing (including the temporary ones)
         LayoutInflater inflater = LayoutInflater.from(mContext);
 
-        addTiles(mContainerView, inflater, false);
+        addUserTiles(mContainerView, inflater);
+        addSystemTiles(mContainerView, inflater);
         addTemporaryTiles(mContainerView, inflater);
 
         queryForUserInformation();
@@ -550,244 +529,45 @@ class QuickSettings {
                         iov.setImageDrawable(null);
                     }
                     setActivity(view, rssiState);
-    private void addTiles(ViewGroup parent, LayoutInflater inflater, boolean addMissing) {
-        // Load all the customizable tiles. If not yet modified by the user, load default ones.
-        // After enabled tiles are loaded, proceed to load missing tiles and set them to View.GONE.
-        // If all the tiles were deleted, they are still loaded, but their visibility is changed
-        String tileContainer = Settings.System.getString(mContext.getContentResolver(),
-                Settings.System.QUICK_SETTINGS_TILES);
-        if(tileContainer == null) tileContainer = DEFAULT_TILES;
-        Tile[] allTiles = Tile.values();
-        String[] storedTiles = tileContainer.split(DELIMITER);
-        List<String> allTilesArray = enumToStringArray(allTiles);
-        List<String> storedTilesArray = Arrays.asList(storedTiles);
 
-        for(String tile : addMissing ? allTilesArray : storedTilesArray) {
-            boolean addTile = storedTilesArray.contains(tile);
-            if(addMissing) addTile = !addTile;
-            if(addTile) {
-                if(Tile.USER.toString().equals(tile.toString())) { // User
-                    QuickSettingsTileView userTile = (QuickSettingsTileView)
-                            inflater.inflate(R.layout.quick_settings_tile, parent, false);
-                    userTile.setContent(R.layout.quick_settings_tile_user, inflater);
-                    userTile.setTileId(Tile.USER);
-                    userTile.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            collapsePanels();
-                            final UserManager um = UserManager.get(mContext);
-                            if (um.getUsers(true).size() > 1) {
-                                try {
-                                    WindowManagerGlobal.getWindowManagerService().lockNow(null);
-                                } catch (RemoteException e) {
-                                    Log.e(TAG, "Couldn't show user switcher", e);
-                                }
-                            } else {
-                                Intent intent = ContactsContract.QuickContact
-                                        .composeQuickContactsIntent(mContext, v,
-                                        ContactsContract.Profile.CONTENT_URI,
-                                        ContactsContract.QuickContact.MODE_LARGE, null);
-                                mContext.startActivityAsUser(intent,
-                                        new UserHandle(UserHandle.USER_CURRENT));
-                            }
-                        }
-                    });
+                    tv.setText(state.label);
+                    view.setContentDescription(mContext.getResources().getString(
+                            R.string.accessibility_quick_settings_mobile,
+                            rssiState.signalContentDescription, rssiState.dataContentDescription,
+                            state.label));
+                }
+            });
+            parent.addView(rssiTile);
+        }
 
-                    mModel.addUserTile(userTile, new QuickSettingsModel.RefreshCallback() {
+        // Rotation Lock
+        if (mContext.getResources().getBoolean(R.bool.quick_settings_show_rotation_lock)
+                || DEBUG_GONE_TILES) {
+            final QuickSettingsBasicTile rotationLockTile
+                    = new QuickSettingsBasicTile(mContext);
+            rotationLockTile.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    final boolean locked = mRotationLockController.isRotationLocked();
+                    mRotationLockController.setRotationLocked(!locked);
+                }
+            });
+            mModel.addRotationLockTile(rotationLockTile, mRotationLockController,
+                    new QuickSettingsModel.RefreshCallback() {
                         @Override
                         public void refreshView(QuickSettingsTileView view, State state) {
-                            UserState us = (UserState) state;
-                            ImageView iv = (ImageView) view.findViewById(R.id.user_imageview);
-                            TextView tv = (TextView) view.findViewById(R.id.user_textview);
-                            tv.setText(state.label);
-                            iv.setImageDrawable(us.avatar);
-                            view.setContentDescription(mContext.getString(
-                                    R.string.accessibility_quick_settings_user, state.label));
-                        }
-                    });
-                    parent.addView(userTile);
-                    mDynamicSpannedTiles.add(userTile);
-                    if(addMissing) userTile.setVisibility(View.GONE);
-                } else if(Tile.BRIGHTNESS.toString().equals(tile.toString())) { // Brightness
-                    final QuickSettingsBasicTile brightnessTile
-                            = new QuickSettingsBasicTile(mContext);
-                    brightnessTile.setTileId(Tile.BRIGHTNESS);
-                    brightnessTile.setImageResource(R.drawable.ic_qs_brightness_auto_off);
-                    brightnessTile.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            collapsePanels();
-                            showBrightnessDialog();
-                        }
-                    });
-                    mModel.addBrightnessTile(brightnessTile,
-                            new QuickSettingsModel.BasicRefreshCallback(brightnessTile));
-                    parent.addView(brightnessTile);
-                    mDynamicSpannedTiles.add(brightnessTile);
-                    if(addMissing) brightnessTile.setVisibility(View.GONE);
-                } else if(Tile.SETTINGS.toString().equals(tile.toString())) { // Settings tile
-                    final QuickSettingsBasicTile settingsTile
-                            = new QuickSettingsBasicTile(mContext);
-                    settingsTile.setTileId(Tile.SETTINGS);
-                    settingsTile.setImageResource(R.drawable.ic_qs_settings);
-                    settingsTile.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            startSettingsActivity(android.provider.Settings.ACTION_SETTINGS);
-                        }
-                    });
-                    mModel.addSettingsTile(settingsTile,
-                            new QuickSettingsModel.BasicRefreshCallback(settingsTile));
-                    parent.addView(settingsTile);
-                    mDynamicSpannedTiles.add(settingsTile);
-                    if(addMissing) settingsTile.setVisibility(View.GONE);
-                } else if(Tile.WIFI.toString().equals(tile.toString())) {
-                    // Wi-fi
-                    final QuickSettingsTileView wifiTile = (QuickSettingsTileView)
-                            inflater.inflate(R.layout.quick_settings_tile, parent, false);
-                    wifiTile.setTileId(Tile.WIFI);
-                    wifiTile.setContent(R.layout.quick_settings_tile_wifi, inflater);
-                    wifiTile.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            final boolean enable =
-                                    (mWifiManager.getWifiState() !=
-                                            WifiManager.WIFI_STATE_ENABLED);
-                            new AsyncTask<Void, Void, Void>() {
-                                @Override
-                                protected Void doInBackground(Void... args) {
-                                    // Disable tethering if enabling Wifi
-                                    final int wifiApState = mWifiManager.getWifiApState();
-                                    if (enable &&
-                                            ((wifiApState == WifiManager.WIFI_AP_STATE_ENABLING) ||
-                                            (wifiApState == WifiManager.WIFI_AP_STATE_ENABLED))) {
-                                        mWifiManager.setWifiApEnabled(null, false);
-                                    }
-
-                                    mWifiManager.setWifiEnabled(enable);
-                                    return null;
-                                }
-                            }.execute();
-                            wifiTile.setPressed(false);
-                        }
-                    });
-
-                    wifiTile.setOnLongClickListener(new View.OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View v) {
-                            startSettingsActivity(android.provider.Settings.ACTION_WIFI_SETTINGS);
-                            return true;
-                        }} );
-
-                    mModel.addWifiTile(wifiTile, new NetworkActivityCallback() {
-                        @Override
-                        public void refreshView(QuickSettingsTileView view, State state) {
-                            WifiState wifiState = (WifiState) state;
-                            ImageView iv = (ImageView) view.findViewById(R.id.image);
-                            iv.setImageResource(wifiState.iconId);
-                            setActivity(view, wifiState);
-                            TextView tv = (TextView) view.findViewById(R.id.text);
-                            tv.setText(wifiState.label);
-                            wifiTile.setContentDescription(mContext.getString(
-                                    R.string.accessibility_quick_settings_wifi,
-                                    wifiState.signalContentDescription,
-                                    (wifiState.connected) ? wifiState.label : ""));
-                        }
-                    });
-                    parent.addView(wifiTile);
-                    if(addMissing) wifiTile.setVisibility(View.GONE);
-                } else if(Tile.RSSI.toString().equals(tile.toString())) { // RSSI
-                    if (mModel.deviceHasMobileData()) {
-                        QuickSettingsTileView rssiTile = (QuickSettingsTileView)
-                                inflater.inflate(R.layout.quick_settings_tile, parent, false);
-                        rssiTile.setTileId(Tile.RSSI);
-                        rssiTile.setContent(R.layout.quick_settings_tile_rssi, inflater);
-                        rssiTile.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                // TODO: RSSI toggle
-                                Intent intent = new Intent();
-                                intent.setComponent(new ComponentName(
-                                        "com.android.settings",
-                                        "com.android.settings.Settings$DataUsageSummaryActivity"));
-                                startSettingsActivity(intent);
+                            QuickSettingsModel.RotationLockState rotationLockState =
+                                    (QuickSettingsModel.RotationLockState) state;
+                            view.setVisibility(rotationLockState.visible
+                                    ? View.VISIBLE : View.GONE);
+                            if (state.iconId != 0) {
+                                // needed to flush any cached IDs
+                                rotationLockTile.setImageDrawable(null);
+                                rotationLockTile.setImageResource(state.iconId);
                             }
-                        });
-                        mModel.addRSSITile(rssiTile, new NetworkActivityCallback() {
-                            @Override
-                            public void refreshView(QuickSettingsTileView view, State state) {
-                                RSSIState rssiState = (RSSIState) state;
-                                ImageView iv = (ImageView) view.findViewById(R.id.rssi_image);
-                                ImageView iov = (ImageView)
-                                        view.findViewById(R.id.rssi_overlay_image);
-                                TextView tv = (TextView) view.findViewById(R.id.rssi_textview);
-                                // Force refresh
-                                iv.setImageDrawable(null);
-                                iv.setImageResource(rssiState.signalIconId);
-
-                                if (rssiState.dataTypeIconId > 0) {
-                                    iov.setImageResource(rssiState.dataTypeIconId);
-                                } else {
-                                    iov.setImageDrawable(null);
-                                }
-                                setActivity(view, rssiState);
-
-                                tv.setText(state.label);
-                                view.setContentDescription(mContext.getResources().getString(
-                                        R.string.accessibility_quick_settings_mobile,
-                                        rssiState.signalContentDescription,
-                                        rssiState.dataContentDescription,
-                                        state.label));
+                            if (state.label != null) {
+                                rotationLockTile.setText(state.label);
                             }
-                        });
-                        parent.addView(rssiTile);
-                        if(addMissing) rssiTile.setVisibility(View.GONE);
-                    }
-                } else if(Tile.ROTATION.toString().equals(tile.toString())) { // Rotation Lock
-                    if (mContext.getResources()
-                            .getBoolean(R.bool.quick_settings_show_rotation_lock)
-                                    || DEBUG_GONE_TILES) {
-                        final QuickSettingsBasicTile rotationLockTile
-                                = new QuickSettingsBasicTile(mContext);
-                        rotationLockTile.setTileId(Tile.ROTATION);
-                        rotationLockTile.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                final boolean locked = mRotationLockController.isRotationLocked();
-                                mRotationLockController.setRotationLocked(!locked);
-                            }
-                        });
-                        mModel.addRotationLockTile(rotationLockTile, mRotationLockController,
-                                new QuickSettingsModel.RefreshCallback() {
-                                    @Override
-                                    public void refreshView(QuickSettingsTileView view,
-                                            State state) {
-                                        QuickSettingsModel.RotationLockState rotationLockState =
-                                                (QuickSettingsModel.RotationLockState) state;
-                                        // can't show/hide view, so just enable/disable
-                                        view.setEnabled(rotationLockState.visible);
-                                        if (state.iconId != 0) {
-                                            // needed to flush any cached IDs
-                                            rotationLockTile.setImageDrawable(null);
-                                            rotationLockTile.setImageResource(state.iconId);
-                                        }
-                                        if (state.label != null) {
-                                            rotationLockTile.setText(state.label);
-                                        }
-                                    }
-                                });
-                        parent.addView(rotationLockTile);
-                        if(addMissing) rotationLockTile.setVisibility(View.GONE);
-                    }
-                } else if(Tile.BATTERY.toString().equals(tile.toString())) { // Battery
-                    final QuickSettingsTileView batteryTile = (QuickSettingsTileView)
-                            inflater.inflate(R.layout.quick_settings_tile, parent, false);
-                    batteryTile.setTileId(Tile.BATTERY);
-                    batteryTile.setContent(R.layout.quick_settings_tile_battery, inflater);
-                    batteryTile.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            startSettingsActivity(Intent.ACTION_POWER_USAGE_SUMMARY);
                         }
                     });
             parent.addView(rotationLockTile);
@@ -937,141 +717,42 @@ class QuickSettings {
             });
             parent.addView(bluetoothTile);
         }
-                    mModel.addBatteryTile(batteryTile, new QuickSettingsModel.RefreshCallback() {
-                        @Override
-                        public void refreshView(QuickSettingsTileView unused, State state) {
-                            QuickSettingsModel.BatteryState batteryState =
-                                    (QuickSettingsModel.BatteryState) state;
-                            String t;
-                            if (batteryState.batteryLevel == 100) {
-                                t = mContext.getString(
-                                        R.string.quick_settings_battery_charged_label);
-                            } else {
-                                t = batteryState.pluggedIn
-                                    ? mContext.getString(
-                                            R.string.quick_settings_battery_charging_label,
-                                            batteryState.batteryLevel)
-                                    : mContext.getString(
-                                            R.string.status_bar_settings_battery_meter_format,
-                                            batteryState.batteryLevel);
-                            }
-                            ((TextView)batteryTile.findViewById(R.id.text)).setText(t);
-                            batteryTile.setContentDescription(
-                                    mContext.getString(
-                                            R.string.accessibility_quick_settings_battery, t));
-                        }
-                    });
-                    parent.addView(batteryTile);
-                    if(addMissing) batteryTile.setVisibility(View.GONE);
-                } else if(Tile.AIRPLANE.toString().equals(tile.toString())) { // Airplane Mode
-                    final QuickSettingsBasicTile airplaneTile
-                            = new QuickSettingsBasicTile(mContext);
-                    airplaneTile.setTileId(Tile.AIRPLANE);
-                    mModel.addAirplaneModeTile(airplaneTile,
-                            new QuickSettingsModel.RefreshCallback() {
-                        @Override
-                        public void refreshView(QuickSettingsTileView unused, State state) {
-                            airplaneTile.setImageResource(state.iconId);
 
-                            String airplaneState = mContext.getString(
-                                    (state.enabled) ? R.string.accessibility_desc_on
-                                            : R.string.accessibility_desc_off);
-                            airplaneTile.setContentDescription(
-                                    mContext.getString(
-                                            R.string.accessibility_quick_settings_airplane,
-                                            airplaneState));
-                            airplaneTile.setText(state.label);
-                        }
-                    });
-                    parent.addView(airplaneTile);
-                    if(addMissing) airplaneTile.setVisibility(View.GONE);
-                } else if(Tile.BLUETOOTH.toString().equals(tile.toString())) { // Bluetooth
-                    if (mModel.deviceSupportsBluetooth()
-                            || DEBUG_GONE_TILES) {
-                        final QuickSettingsBasicTile bluetoothTile
-                                = new QuickSettingsBasicTile(mContext);
-                        bluetoothTile.setTileId(Tile.BLUETOOTH);
-                        bluetoothTile.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                if (mBluetoothAdapter.isEnabled()) {
-                                    mBluetoothAdapter.disable();
-                                } else {
-                                    mBluetoothAdapter.enable();
-                                }
-                                bluetoothTile.setPressed(false);
-                            }
-                        });
-
-                        bluetoothTile.setOnLongClickListener(new View.OnLongClickListener() {
-                            @Override
-                            public boolean onLongClick(View v) {
-                                startSettingsActivity(
-                                        android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
-                                return true;
-                            }});
-
-                        mModel.addBluetoothTile(bluetoothTile,
-                                new QuickSettingsModel.RefreshCallback() {
-                            @Override
-                            public void refreshView(QuickSettingsTileView unused, State state) {
-                                BluetoothState bluetoothState = (BluetoothState) state;
-                                bluetoothTile.setImageResource(state.iconId);
-                                bluetoothTile.setContentDescription(mContext.getString(
-                                        R.string.accessibility_quick_settings_bluetooth,
-                                        bluetoothState.stateContentDescription));
-                                bluetoothTile.setText(state.label);
-                            }
-                        });
-                        parent.addView(bluetoothTile);
-                        if(addMissing) bluetoothTile.setVisibility(View.GONE);
-                    }
-                } else if(Tile.LOCATION.toString().equals(tile.toString())) { // Location
-                    final QuickSettingsBasicTile locationTile
-                            = new QuickSettingsBasicTile(mContext);
-                    locationTile.setTileId(Tile.LOCATION);
-                    locationTile.setImageResource(R.drawable.ic_qs_location_on);
-                    locationTile.setTextResource(R.string.quick_settings_location_label);
-                    locationTile.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            boolean newLocationEnabledState
-                                    = !mLocationController.isLocationEnabled();
-                            if (mLocationController.setLocationEnabled(newLocationEnabledState)
-                                    && newLocationEnabledState) {
-                                // If we've successfully switched from location off to on, close
-                                // the notifications tray to show the network location provider
-                                // consent dialog.
-                                Intent closeDialog
-                                        = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                                mContext.sendBroadcast(closeDialog);
-                            }
-                        }
-                    });
-
-                    locationTile.setOnLongClickListener(new View.OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View v) {
-                            startSettingsActivity(
-                                    android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            return true; // Consume click
-                        }} );
-
-                    mModel.addLocationTile(locationTile,
-                            new QuickSettingsModel.BasicRefreshCallback(locationTile));
-                    parent.addView(locationTile);
-                    if(addMissing) locationTile.setVisibility(View.GONE);
-                }
+        // Location
+        final QuickSettingsBasicTile locationTile
+                = new QuickSettingsBasicTile(mContext);
+        locationTile.setImageResource(R.drawable.ic_qs_location_on);
+        locationTile.setTextResource(R.string.quick_settings_location_label);
+        locationTile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startSettingsActivity(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             }
+        });
+        if (LONG_PRESS_TOGGLES) {
+            locationTile.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    boolean newLocationEnabledState = !mLocationController.isLocationEnabled();
+                    if (mLocationController.setLocationEnabled(newLocationEnabledState)
+                            && newLocationEnabledState) {
+                        // If we've successfully switched from location off to on, close the
+                        // notifications tray to show the network location provider consent dialog.
+                        Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                        mContext.sendBroadcast(closeDialog);
+                    }
+                    return true; // Consume click
+                }} );
         }
-        if(!addMissing) addTiles(parent, inflater, true);
+        mModel.addLocationTile(locationTile,
+                new QuickSettingsModel.BasicRefreshCallback(locationTile));
+        parent.addView(locationTile);
     }
 
     private void addTemporaryTiles(final ViewGroup parent, final LayoutInflater inflater) {
         // Alarm tile
         final QuickSettingsBasicTile alarmTile
                 = new QuickSettingsBasicTile(mContext);
-        alarmTile.setTemporary(true);
         alarmTile.setImageResource(R.drawable.ic_qs_alarm_on);
         alarmTile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1093,7 +774,6 @@ class QuickSettings {
         // Remote Display
         QuickSettingsBasicTile remoteDisplayTile
                 = new QuickSettingsBasicTile(mContext);
-        wifiDisplayTile.setTemporary(true);
         wifiDisplayTile.setImageResource(R.drawable.ic_qs_remote_display);
         wifiDisplayTile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1124,7 +804,6 @@ class QuickSettings {
             // IME
             final QuickSettingsBasicTile imeTile
                     = new QuickSettingsBasicTile(mContext);
-            imeTile.setTemporary(true);
             imeTile.setImageResource(R.drawable.ic_qs_ime);
             imeTile.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -1146,7 +825,6 @@ class QuickSettings {
         // Bug reports
         final QuickSettingsBasicTile bugreportTile
                 = new QuickSettingsBasicTile(mContext);
-        bugreportTile.setTemporary(true);
         bugreportTile.setImageResource(com.android.internal.R.drawable.stat_sys_adb);
         bugreportTile.setTextResource(com.android.internal.R.string.bugreport_title);
         bugreportTile.setOnClickListener(new View.OnClickListener() {
@@ -1183,7 +861,6 @@ class QuickSettings {
         // SSL CA Cert Warning.
         final QuickSettingsBasicTile sslCaCertWarningTile =
                 new QuickSettingsBasicTile(mContext, null, R.layout.quick_settings_tile_monitoring);
-        sslCaCertWarningTile.setTemporary(true);
         sslCaCertWarningTile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1202,14 +879,6 @@ class QuickSettings {
         parent.addView(sslCaCertWarningTile);
     }
 
-    List<String> enumToStringArray(Tile[] enumData) {
-        List<String> array = new ArrayList<String>();
-        for(Tile tile : enumData) {
-            array.add(tile.toString());
-        }
-        return array;
-    }
-
     void updateResources() {
         Resources r = mContext.getResources();
 
@@ -1224,6 +893,7 @@ class QuickSettings {
         ((QuickSettingsContainerView)mContainerView).updateResources();
         mContainerView.requestLayout();
     }
+
 
     private void showBrightnessDialog() {
         Intent intent = new Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG);
