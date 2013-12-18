@@ -374,7 +374,6 @@ public class KeyguardTransportControlView extends FrameLayout {
         mAudioManager.unregisterRemoteController(mRemoteController);
         KeyguardUpdateMonitor.getInstance(mContext).removeCallback(mUpdateMonitor);
         mMetadata.clear();
-        mUserSeeking = false;
         removeCallbacks(mUpdateSeekBars);
     }
 
