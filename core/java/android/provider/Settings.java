@@ -2756,6 +2756,8 @@ public final class Settings {
          * @hide
          */
         public static final String VOLUME_MUSIC_CONTROLS = "volume_music_controls";
+
+        /**
          * Quick settings tiles to show on status bar
          * @hide
          */

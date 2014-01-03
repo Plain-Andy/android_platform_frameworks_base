@@ -3112,16 +3112,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     private boolean mRightPaddingDefined = false;
 
     /**
-     * Cache if a left padding has been defined
-     */
-    private boolean mLeftPaddingDefined = false;
-
-    /**
-     * Cache if a right padding has been defined
-     */
-    private boolean mRightPaddingDefined = false;
-
-    /**
      * @hide
      */
     int mOldWidthMeasureSpec = Integer.MIN_VALUE;
