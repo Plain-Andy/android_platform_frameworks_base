@@ -341,8 +341,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
         public void update() {
             ContentResolver resolver = mContext.getContentResolver();
             boolean autoBrightness = Settings.System.getInt(
-                    resolver, Settings.System.SCREEN_BRIGHTNESS_MODE, 0) ==
-                    Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+                    resolver, Settings.System.SCREEN_BRIGHTNESS_MODE, 0) == 1;
             mBrightnessControl = !autoBrightness && Settings.System.getInt(
                     resolver, Settings.System.STATUS_BAR_BRIGHTNESS_CONTROL, 0) == 1;
         }
