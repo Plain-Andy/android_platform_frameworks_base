@@ -2101,4 +2101,5 @@
   <!-- Config.xml entries -->
   <java-symbol type="integer" name="config_backKillTimeout" />
   <java-symbol type="string" name="config_partial_segment_expire_age" />
+  <java-symbol type="bool" name="config_global_phone_enabled" />
 </resources>
