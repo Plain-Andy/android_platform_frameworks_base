@@ -231,7 +231,7 @@ public class PhoneStatusBarView extends PanelBar {
         }
 
         if (Settings.AOKP.getInt(mContext.getContentResolver(),
-                    Settings.AOKP.DOUBLE_TAP_SLEEP_GESTURE, 0) == 1) {
+                    Settings.AOKP.DOUBLE_TAP_SLEEP_GESTURE, 1) != 0) {
             mDoubleTapGesture.onTouchEvent(event);
         }
 
