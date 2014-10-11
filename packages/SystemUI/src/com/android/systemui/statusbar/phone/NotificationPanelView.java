@@ -96,7 +96,7 @@ public class NotificationPanelView extends PanelView {
                 mToggleStyle = Settings.AOKP.getInt(resolver,
                         Settings.AOKP.TOGGLES_STYLE, 0);
                 mSwipeToSwitch = mToggleStyle >= 1 ? false : Settings.AOKP.getBoolean(resolver,
-                        Settings.AOKP.SWIPE_TO_SWITCH, false);
+                        Settings.AOKP.SWIPE_TO_SWITCH, true);
             }
         };
 
@@ -116,7 +116,7 @@ public class NotificationPanelView extends PanelView {
         mToggleStyle = Settings.AOKP.getInt(resolver,
                 Settings.AOKP.TOGGLES_STYLE, 0);
         mSwipeToSwitch = mToggleStyle >= 1 ? false : Settings.AOKP.getBoolean(resolver,
-                Settings.AOKP.SWIPE_TO_SWITCH, false);
+                Settings.AOKP.SWIPE_TO_SWITCH, true);
 
         resolver.registerContentObserver(
                 Settings.AOKP.getUriFor(Settings.AOKP.FAST_TOGGLE),
