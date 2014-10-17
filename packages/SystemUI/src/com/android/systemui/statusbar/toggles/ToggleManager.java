@@ -407,6 +407,17 @@ public class ToggleManager {
         if (deviceSupportsBluetooth()) {
             tiles.add(BLUETOOTH_TOGGLE);
         }
+        tiles.add(NFC_TOGGLE);
+        tiles.add(CLOCK_TOGGLE);
+        tiles.add(LOCATION_TOGGLE);
+        tiles.add(SYNC_TOGGLE);
+        tiles.add(SOUND_STATE_TOGGLE);
+        tiles.add(SCREENSHOT_TOGGLE);
+        tiles.add(IMMERSIVE_MODE_TOGGLE);
+        tiles.add(SCREENRECORD_TOGGLE);
+        tiles.add(HEADSUP_TOGGLE);
+        tiles.add(WIFI_TETHER_TOGGLE);
+        tiles.add(USB_TETHER_TOGGLE);
         return tiles;
     }
 
