@@ -407,7 +407,6 @@ public class ToggleManager {
         if (deviceSupportsBluetooth()) {
             tiles.add(BLUETOOTH_TOGGLE);
         }
-        tiles.add(NFC_TOGGLE);
         tiles.add(CLOCK_TOGGLE);
         tiles.add(LOCATION_TOGGLE);
         tiles.add(SYNC_TOGGLE);
