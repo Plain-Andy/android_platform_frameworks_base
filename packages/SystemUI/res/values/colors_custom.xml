@@ -41,4 +41,8 @@
     <color name="linear_color_bar_left_color">#ff0099cc</color>
     <color name="linear_color_bar_middle_color">#ff0099cc</color>
     <color name="linear_color_bar_right_color">#ff888888</color>
+    <color name="status_bar_background_opaque">@color/system_bar_background_opaque</color>
+    <color name="status_bar_background_semi_transparent">@color/system_bar_background_semi_transparent</color>
+    <color name="navigation_bar_background_opaque">@color/system_bar_background_opaque</color>
+    <color name="navigation_bar_background_semi_transparent">@color/system_bar_background_semi_transparent</color>
 </resources>
