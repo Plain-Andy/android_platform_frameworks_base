@@ -92,7 +92,7 @@ public class NotificationPanelView extends PanelView {
             @Override
             public void onChange(boolean selfChange) {
                 mFastToggleEnabled = Settings.AOKP.getBoolean(resolver,
-                        Settings.AOKP.FAST_TOGGLE, false);
+                        Settings.AOKP.FAST_TOGGLE, true);
                 mToggleStyle = Settings.AOKP.getInt(resolver,
                         Settings.AOKP.TOGGLES_STYLE, 0);
                 mSwipeToSwitch = mToggleStyle >= 1 ? false : Settings.AOKP.getBoolean(resolver,
@@ -110,7 +110,7 @@ public class NotificationPanelView extends PanelView {
 
         // Initialization
         mFastToggleEnabled = Settings.AOKP.getBoolean(resolver,
-                Settings.AOKP.FAST_TOGGLE, false);
+                Settings.AOKP.FAST_TOGGLE, true);
         mFastTogglePos = Settings.AOKP.getInt(resolver,
                 Settings.AOKP.CHOOSE_FASTTOGGLE_SIDE, 1);
         mToggleStyle = Settings.AOKP.getInt(resolver,
