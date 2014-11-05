@@ -395,25 +395,29 @@ public class ToggleManager {
         tiles.add(USER_TOGGLE);
         tiles.add(BRIGHTNESS_TOGGLE);
         tiles.add(SETTINGS_TOGGLE);
-        tiles.add(WIFI_TOGGLE);
         if (deviceSupportsTelephony()) {
             tiles.add(SIGNAL_TOGGLE);
+            tiles.add(NETWORK_TOGGLE);
         }
         if (mContext.getResources().getBoolean(R.bool.quick_settings_show_rotation_lock)) {
             tiles.add(ROTATE_TOGGLE);
         }
         tiles.add(BATTERY_TOGGLE);
-        tiles.add(AIRPLANE_TOGGLE);
+        tiles.add(SYNC_TOGGLE);
+        tiles.add(WIFI_TOGGLE);
         if (deviceSupportsBluetooth()) {
             tiles.add(BLUETOOTH_TOGGLE);
         }
-        tiles.add(CLOCK_TOGGLE);
+        if (mContext.getResources().getBoolean(R.bool.quick_settings_show_nfc)) {
+            tiles.add(NFC_TOGGLE);
+        }
         tiles.add(LOCATION_TOGGLE);
-        tiles.add(SYNC_TOGGLE);
+        tiles.add(AIRPLANE_TOGGLE);
+        tiles.add(CLOCK_TOGGLE);
         tiles.add(SOUND_STATE_TOGGLE);
         tiles.add(SCREENSHOT_TOGGLE);
-        tiles.add(IMMERSIVE_MODE_TOGGLE);
         tiles.add(SCREENRECORD_TOGGLE);
+        tiles.add(IMMERSIVE_MODE_TOGGLE);
         tiles.add(HEADSUP_TOGGLE);
         tiles.add(WIFI_TETHER_TOGGLE);
         tiles.add(USB_TETHER_TOGGLE);
