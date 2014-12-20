@@ -801,11 +801,7 @@ static void android_hardware_Camera_setMetadataCb(JNIEnv *env, jobject thiz, jbo
     sp<Camera> camera = get_native_camera(env, thiz, &context);
     if (camera == 0) return;
 
-<<<<<<< HEAD
-    if(mode == true)
-=======
     if (mode == true)
->>>>>>> e4aaabb... Camera: Adds support for meta data callbacks
         rc = camera->sendCommand(CAMERA_CMD_METADATA_ON, 0, 0);
     else
         rc = camera->sendCommand(CAMERA_CMD_METADATA_OFF, 0, 0);
