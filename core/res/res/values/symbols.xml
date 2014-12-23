@@ -777,7 +777,6 @@
   <java-symbol type="string" name="quick_contacts_not_available" />
   <java-symbol type="string" name="reboot_confirm" />
   <java-symbol type="string" name="progress_nomediapresent" />
-  <java-symbol type="string" name="reboot_confirm" />
   <java-symbol type="string" name="reboot_safemode_confirm" />
   <java-symbol type="string" name="reboot_safemode_title" />
   <java-symbol type="string" name="reboot_title" />
